@@ -49,6 +49,9 @@
         cursor: pointer;
         font-size: 1em;
       }
+      button#login-button {
+        display: block;
+      }
       button:hover {
         background-color: #357ae8;
       }
@@ -131,11 +134,13 @@
       <input type="text" id="OpenAI-api-key" /> -->
       <div id="warning-message">Client ID and API Key are required.</div>
       <button id="login-button">Login with Google</button>
+
       <button id="pick-file">Pick a file from Google Drive</button>
-      <h1>Select a Google Doc to Convert to HTML (it can contain tabs)</h1>
-      <h3>Use Google Drive File Picker</h3>
       <div class="url-input-container">
         <h3>Or Enter a Google Doc URL Directly</h3>
+        <p class="hint">
+          Accepted format: https://docs.google.com/document/d/...
+        </p>
         <form id="url-form">
           <input
             type="url"
@@ -145,9 +150,6 @@
           />
           <button type="submit" class="btn">Load Document</button>
         </form>
-        <p class="hint">
-          Accepted format: https://docs.google.com/document/d/...
-        </p>
       </div>
       <div id="preview-container">
         <iframe id="file-preview"></iframe>
@@ -212,11 +214,11 @@
         .addEventListener("blur", function () {
           saveSettings();
         });
-      document
-        .getElementById("OpenAI-api-key")
-        .addEventListener("blur", function () {
-          saveSettings();
-        });
+      // document
+      //   .getElementById("OpenAI-api-key")
+      //   .addEventListener("blur", function () {
+      //     saveSettings();
+      //   });
       document
         .getElementById("login-button")
         .addEventListener("click", async function () {
@@ -228,9 +230,10 @@
           loadPicker();
         });
       // Save the content of the textarea on each change
-      document
-        .getElementById("OpenAI-prompt")
-        .addEventListener("input", savePromptContent);
+      // document
+      //   .getElementById("OpenAI-prompt")
+      //   .addEventListener("input", savePromptContent);
+
       // Add an event listener to the "(Re)convert Google Doc" button
       document
         .getElementById("parse-file")
@@ -241,50 +244,45 @@
           parsedContent = await parseGoogleDoc(fileId);
           displayParsedContent(parsedContent);
         });
-      document
-        .getElementById("send-prompt-OpenAI")
-        .addEventListener("click", sendPromptOpenAI);
+      // document
+      //   .getElementById("send-prompt-OpenAI")
+      //   .addEventListener("click", sendPromptOpenAI);
       function displayParsedContent(content) {
         console.log("display parsed content");
       }
-      function restorePromptContent() {
-        const promptContent = sessionStorage.getItem("OpenAIPromptContent");
-        if (promptContent) {
-          document.getElementById("OpenAI-prompt").value = promptContent;
-        }
-      }
-      function savePromptContent() {
-        const promptContent = document.getElementById("OpenAI-prompt").value;
-        sessionStorage.setItem("OpenAIPromptContent", promptContent);
-      }
-      async function sendPromptOpenAI() {
-        const selectedItems = Array.from(
-          document.querySelectorAll(
-            '#parse-result input[type="checkbox"]:checked'
-          )
-        );
-        const items = selectedItems.map((checkbox) => {
-          const index = checkbox.getAttribute("data-index");
-          return parsedContent[index];
-        });
-        var prompt = document.getElementById("OpenAI-prompt").value;
-        var response = (document.getElementById(
-          "response-OpenAI-container"
-        ).innerHTML = "");
-        await sendOpenAI(prompt, items);
-      }
+      // function restorePromptContent() {
+      //   const promptContent = sessionStorage.getItem("OpenAIPromptContent");
+      //   if (promptContent) {
+      //     document.getElementById("OpenAI-prompt").value = promptContent;
+      //   }
+      // }
+      // function savePromptContent() {
+      //   const promptContent = document.getElementById("OpenAI-prompt").value;
+      //   sessionStorage.setItem("OpenAIPromptContent", promptContent);
+      // }
+      // async function sendPromptOpenAI() {
+      //   const selectedItems = Array.from(
+      //     document.querySelectorAll(
+      //       '#parse-result input[type="checkbox"]:checked'
+      //     )
+      //   );
+      //   var prompt = document.getElementById("OpenAI-prompt").value;
+      //   var response = (document.getElementById(
+      //     "response-OpenAI-container"
+      //   ).innerHTML = "");
+      //   await sendOpenAI(prompt, items);
+      // }
       function saveSettings() {
         clientId = document.getElementById("client-id").value;
         Google_apikey = document.getElementById("Google-api-key").value;
-        OpenAI_apikey = document.getElementById("OpenAI-api-key").value;
+        // OpenAI_apikey = document.getElementById("OpenAI-api-key").value;
         if (!clientId || !Google_apikey) {
           document.getElementById("warning-message").style.display = "block";
           return;
         }
         localStorage.setItem("client_id", clientId);
         localStorage.setItem("Google-apikey", Google_apikey);
-        localStorage.setItem("OpenAI-apikey", OpenAI_apikey);
-        console.log("openai api key saved:", OpenAI_apikey);
+        // localStorage.setItem("OpenAI-apikey", OpenAI_apikey);
         document.getElementById("warning-message").style.display = "none";
       }
     </script>

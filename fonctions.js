@@ -52,11 +52,11 @@ async function initializeGoogleApis() {
 
   clientId = localStorage.getItem("client_id") || "";
   Google_apikey = localStorage.getItem("Google-apikey") || "";
-  OpenAI_apikey = localStorage.getItem("OpenAI-apikey") || "";
+  // OpenAI_apikey = localStorage.getItem("OpenAI-apikey") || "";
 
   document.getElementById("client-id").value = clientId;
   document.getElementById("Google-api-key").value = Google_apikey;
-  document.getElementById("OpenAI-api-key").value = OpenAI_apikey;
+  // document.getElementById("OpenAI-api-key").value = OpenAI_apikey;
 
   if (sessionStorage.getItem("accessToken")) {
     accessToken = sessionStorage.getItem("accessToken");
