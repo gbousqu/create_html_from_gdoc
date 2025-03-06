@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>brouillon</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="sidebar">
+    <button class="menu-toggle">☰ Menu</button>
+    <h3>brouillon</h3>
+    <div class="nav-menu">
+      <ul><li class="nav-item">
+      <a href="#tab-1741038204211-7cxuw76sg" class="nav-link">brouillon</a></li></ul>
+    </div>
+  </div>
+  <div class="content">
+    <div id="tab-1741038204211-7cxuw76sg" class="tab-content">
+      <h1 class="tab_title">brouillon</h1>
+      <div><p>
+</p><div class="table-of-contents">
+        <h3>Table des matières</h3>
+        <div class="toc-placeholder" data-auto-generated="true"></div>
+      </div><p>
+</p><h1 id="heading-documentation-gnre-par-claude-sonnet-37-204211">Documentation (générée par claude Sonnet 3.7)
+</h1><h2 id="heading-rsum-204211">Résumé
+</h2><p>Ce programme permet de convertir un document Google Docs en site HTML statique autonome, tout en préservant sa structure, son contenu, ses images et ses liens. Il transforme la structure d'onglets du document en une navigation web interactive, et gère diverses ressources comme les images insérées et les liens vers des fichiers externes (richLinks). Le site généré peut être hébergé sur n'importe quel serveur web.
+</p><h2 id="heading-fonctionnement-gnral-204211">Fonctionnement général
+</h2><h3 id="heading-flux-de-travail-204211">Flux de travail
+</h3><ol><li>Authentification: L'utilisateur s'authentifie à l'API Google Docs
+<li>Sélection du document: L'utilisateur entre l'ID du document Google Docs à convertir
+<li>Analyse et extraction: Le programme analyse le document et extrait:
+<ol><li>La structure des onglets et sous-onglets
+<li>Le contenu HTML de chaque onglet
+<li>Les objets insérés (images, liens vers des fichiers Drive)
+</ol><li>Traitement des ressources:
+<ol><li>Les images sont converties en base64 puis sauvegardées comme fichiers
+<li>Les liens vers des fichiers Drive sont formatés avec des icônes appropriées selon leur type
+</ol><li>Génération du site: Le programme:
+<ol><li>Crée un dossier dédié au document (avec un nom basé sur le titre)
+<li>Génère un fichier HTML principal avec la structure de navigation et le JavaScript nécessaire
+<li>Sauvegarde les images dans un sous-dossier 'images'
+<li>Copie le fichier CSS pour le style
+</ol><li>Affichage du résultat: Le site généré est ouvert dans un nouvel onglet avec des informations sur l'emplacement des fichiers
+</li></ol><h3 id="heading-architecture-technique-204221">Architecture technique
+</h3><p>Le programme utilise:
+</p><ol><li>JavaScript côté client pour interagir avec l'API Google
+<li>PHP côté serveur pour la manipulation des fichiers et dossiers
+<li>Une architecture modulaire séparant les responsabilités entre différentes fonctions
+</li></ol><h2 id="heading-description-dtaille-des-fichiers-et-fonctions-204223">Description détaillée des fichiers et fonctions
+</h2><h3 id="heading-fichiers-principaux-204223">Fichiers principaux
+</h3><p>
+</p></div>
+    </div>
+  </div>
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const objectData = {};
+    
+    // Configuration du menu responsive
+    const sidebar = document.querySelector('.sidebar');
+    const menuButton = document.querySelector('.menu-toggle');
+    
+    // Gérer l'affichage du menu sur mobile
+    menuButton.addEventListener('click', function() {
+      sidebar.classList.toggle('expanded');
+      this.innerHTML = sidebar.classList.contains('expanded') ? '✕ Fermer' : '☰ Menu';
+    });
+    
+    // Cacher tous les onglets sauf le premier
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(tab => {
+      tab.style.display = "none";
+    });
+    
+    // Afficher le premier onglet par défaut
+    const firstTab = document.querySelector('.tab-content');
+    const firstLink = document.querySelector('.nav-link');
+    if (firstTab) {
+      firstTab.style.display = "block";
+      firstTab.classList.add('active');
+    }
+    if (firstLink) firstLink.classList.add('active');
+    
+    // Fonction pour remplacer tous les objets inline
+    const replaceInlineObjects = (container) => {
+      // Remplacer les objets inline
+      container.querySelectorAll('span.inline-object').forEach(obj => {
+        const objectId = obj.getAttribute('data-object-id');
+        if (!objectId || !objectData[objectId]) {
+          obj.textContent = '[Objet non disponible]';
+          return;
+        }
+        
+        const data = objectData[objectId];
+        
+        if (data.type === 'driveFile') {
+          // Créer un élément de lien Drive
+          const link = document.createElement('a');
+          link.href = data.url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.className = 'drive-file-link';
+          
+          // Déterminer l'icône selon le type de fichier
+          let iconSvg = '';
+          switch(data.fileType) {
+            case 'spreadsheet':
+              iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#0F9D58" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/><path fill="#0F9D58" d="M9 12H7v2h2v-2zm0-3H7v2h2V9zm0 6H7v2h2v-2zm6-6h-4v2h4V9zm0 3h-4v2h4v-2zm0 3h-4v2h4v-2z"/></svg>';
+              break;
+            case 'presentation':
+              iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#F4B400" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/><path fill="#F4B400" d="M11 12V9h2v3h3v2h-3v3h-2v-3H8v-2h3z"/></svg>';
+              break;
+            case 'form':
+              iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#673AB7" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/><path fill="#673AB7" d="M7 7h10v2H7zm0 4h10v2H7zm0 4h7v2H7z"/></svg>';
+              break;
+            case 'image':
+              iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#34A853" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/><path fill="#34A853" d="M14.5 11l-3 4.5-2-3L7 16h10l-2.5-5z"/><circle fill="#34A853" cx="8.5" cy="8.5" r="1.5"/></svg>';
+              break;
+            case 'video':
+              iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#EA4335" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/><path fill="#EA4335" d="M10 8.5v7l5-3.5-5-3.5z"/></svg>';
+              break;
+            default:
+              iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#4285F4" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/><path fill="#4285F4" d="M7 7h10v2H7zm0 4h10v2H7zm0 4h7v2H7z"/></svg>';
+          }
+          
+          link.innerHTML = `
+            <div class="drive-file-icon">${iconSvg}</div>
+            <div class="drive-file-info">
+              <span class="drive-file-title">${data.title}</span>
+              ${data.description ? `<span class="drive-file-desc">${data.description}</span>` : ''}
+            </div>
+          `;
+          
+          // Remplacer le placeholder par le lien
+          obj.parentNode.replaceChild(link, obj);
+          console.log('Lien Drive remplacé pour objectId:', objectId);
+        }
+      });
+    };
+    
+    // Fonction pour générer automatiquement les tables des matières
+    const generateTableOfContents = () => {
+      const activeTab = document.querySelector('.tab-content.active');
+      const tocPlaceholders = activeTab ? activeTab.querySelectorAll('.toc-placeholder[data-auto-generated="true"]') : [];
+      
+      if (tocPlaceholders.length === 0) return;
+      
+      // Trouver tous les titres dans l'onglet actif
+      const headings = activeTab.querySelectorAll('h1[id]:not(.tab_title), h2[id], h3[id], h4[id], h5[id], h6[id]');
+      
+      if (headings.length === 0) return;
+      
+      // Générer le HTML de la table des matières
+      const tocHtml = document.createElement('ul');
+      tocHtml.className = 'toc-list';
+      
+      headings.forEach(heading => {
+        const level = parseInt(heading.tagName.charAt(1));
+        const item = document.createElement('li');
+        item.className = `toc-item toc-level-${level}`;
+        item.style.marginLeft = `${(level-1) * 20}px`;
+        
+        const link = document.createElement('a');
+        link.href = `#${heading.id}`;
+        link.textContent = heading.textContent;
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          heading.scrollIntoView({ behavior: 'smooth' });
+          
+          // Mettre en évidence temporairement le titre cible
+          const originalBg = heading.style.backgroundColor;
+          heading.style.backgroundColor = '#ffff99';
+          setTimeout(() => {
+            heading.style.backgroundColor = originalBg;
+          }, 2000);
+        });
+        
+        item.appendChild(link);
+        tocHtml.appendChild(item);
+      });
+      
+      // Remplir les placeholders
+      tocPlaceholders.forEach(placeholder => {
+        placeholder.innerHTML = '';
+        placeholder.appendChild(tocHtml.cloneNode(true));
+      });
+    };
+    
+    // Remplacer les objets dans l'onglet actif initial
+    replaceInlineObjects(firstTab);
+    
+    // Générer les tables des matières
+    generateTableOfContents();
+    
+    // Ajouter des écouteurs d'événements à tous les liens de navigation
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Supprimer la classe active de tous les liens et contenus
+        navLinks.forEach(l => l.classList.remove('active'));
+        tabContents.forEach(tab => {
+          tab.classList.remove('active');
+          tab.style.display = "none";
+        });
+        
+        // Ajouter la classe active au lien et contenu cliqués
+        this.classList.add('active');
+        const targetId = this.getAttribute('href').substring(1);
+        const targetTab = document.getElementById(targetId);
+        if (targetTab) {
+          targetTab.classList.add('active');
+          targetTab.style.display = "block";
+          
+          // Remplacer les objets dans l'onglet nouvellement affiché
+          replaceInlineObjects(targetTab);
+          
+          // Générer les tables des matières pour le nouvel onglet
+          setTimeout(() => {
+            generateTableOfContents();
+          }, 100);
+        }
+        
+        // Fermer le menu sur mobile après sélection d'un onglet
+        if (window.innerWidth <= 768) {
+          sidebar.classList.remove('expanded');
+          menuButton.innerHTML = '☰ Menu';
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>
+  

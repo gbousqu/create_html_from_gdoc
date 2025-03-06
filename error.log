@@ -1,0 +1,4 @@
+[02-Mar-2025 08:44:44 UTC] PHP Fatal error:  Allowed memory size of 134217728 bytes exhausted (tried to allocate 65011744 bytes) in C:\wamp64\www\qcm_en_developpement\tests\test_create_html_from_gdoc\save_file.php on line 10
+[02-Mar-2025 08:44:44 UTC] PHP Stack trace:
+[02-Mar-2025 08:44:44 UTC] PHP   1. {main}() C:\wamp64\www\qcm_en_developpement\tests\test_create_html_from_gdoc\save_file.php:0
+[02-Mar-2025 08:44:44 UTC] PHP   2. file_get_contents($filename = 'php://input') C:\wamp64\www\qcm_en_developpement\tests\test_create_html_from_gdoc\save_file.php:10
