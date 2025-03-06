@@ -4,12 +4,10 @@ var Google_apikey;
 var OpenAI_apikey;
 var accessToken;
 
-// Ajoutez cette fonction à vos fonctions.js
-
-// Fonction pour extraire l'ID du document depuis l'URL
+// Function to extract the document ID from the URL
 function extractGoogleDocId(url) {
-  // Modèle d'URL: https://docs.google.com/document/d/DOCUMENT_ID/edit
-  // ou https://docs.google.com/document/d/DOCUMENT_ID/
+  // URL pattern: https://docs.google.com/document/d/DOCUMENT_ID/edit
+  // or https://docs.google.com/document/d/DOCUMENT_ID/
   if (!url) return null;
 
   try {
@@ -17,12 +15,12 @@ function extractGoogleDocId(url) {
     const match = url.match(regex);
     return match ? match[1] : null;
   } catch (error) {
-    console.error("Erreur lors de l'extraction de l'ID du document:", error);
+    console.error("Error extracting document ID:", error);
     return null;
   }
 }
 
-// Initialiser le gestionnaire d'événements pour le formulaire
+// Initialize the event handler for the form
 document.addEventListener("DOMContentLoaded", function () {
   const urlForm = document.getElementById("url-form");
   if (urlForm) {
@@ -33,12 +31,12 @@ document.addEventListener("DOMContentLoaded", function () {
       const docId = extractGoogleDocId(docUrl);
 
       if (docId) {
-        console.log("ID du document extrait:", docId);
+        console.log("Extracted document ID:", docId);
         sessionStorage.setItem("fileId", docId);
         showFilePreview(docId);
       } else {
         alert(
-          "URL du document Google invalide. Assurez-vous que l'URL est au format: https://docs.google.com/document/d/DOCUMENT_ID/edit"
+          "Invalid Google document URL. Ensure the URL is in the format: https://docs.google.com/document/d/DOCUMENT_ID/edit"
         );
       }
     });
@@ -78,7 +76,6 @@ async function initializeGoogleApis() {
     await initializeGoogleApiClient(); // Await the initialization of Google API client
   } else {
     document.getElementById("warning-message").style.display = "block";
-    // await Promise.resolve(); // Await a resolved promise
   }
 }
 
@@ -111,7 +108,7 @@ async function requestAccessToken() {
   console.log("Requesting access token...");
 
   if (!tokenClient) {
-    // Créer le tokenClient une seule fois
+    // Create the tokenClient only once
     tokenClient = await google.accounts.oauth2.initTokenClient({
       client_id: clientId,
       scope: [
@@ -126,7 +123,7 @@ async function requestAccessToken() {
       callback: (response) => {
         if (response.error) {
           console.error("Error during token request:", response.error);
-          // Rejeter la Promise
+          // Reject the Promise
           reject(response.error);
           return;
         }
@@ -134,13 +131,13 @@ async function requestAccessToken() {
         accessToken = response.access_token;
         sessionStorage.setItem("accessToken", accessToken);
         gapi.client.setToken({ access_token: accessToken });
-        // Résoudre la Promise
+        // Resolve the Promise
         resolve();
       },
     });
   }
 
-  // Renvoyer une Promise
+  // Return a Promise
   return new Promise((resolve, reject) => {
     tokenClient.requestAccessToken();
   });
@@ -155,18 +152,15 @@ async function checkAccessToken(accessToken) {
 
     if (!response.ok) {
       console.log("Response not OK:", response.status, response.statusText);
-      // throw new Error("Token is invalid");
     }
 
-    // Vérifiez si le token est expiré ou invalide
+    // Check if the token is expired or invalid
     if (data.error || data.expires_in <= 0) {
       console.log("Token is invalid or expired:", data.error || "Expired");
       return false;
     }
-    // console.log("Token is valid:", data);
     return true;
   } catch (error) {
-    // console.log("Error checking token:", error);
     return false;
   }
 }
@@ -194,24 +188,24 @@ async function initializeGoogleApiClient() {
 async function loadPicker() {
   console.log("\n\n Loading Google Picker...");
 
-  //au cas où gapi n'est pas défini
+  // in case gapi is not defined
   await loadGoogleApiScript();
 
   if (!accessToken) {
     console.log("No access token available, requesting one...");
     await requestAccessToken();
-    console.log("lancement du picker");
+    console.log("launching picker");
     gapi.load("picker", { callback: onPickerApiLoad });
   } else {
     const isValid = await checkAccessToken(accessToken);
     if (!isValid) {
       console.log("Access token is invalid, requesting a new one...");
       await requestAccessToken();
-      console.log("lancement du picker");
+      console.log("launching picker");
       gapi.load("picker", { callback: onPickerApiLoad });
     } else {
       console.log("Access token is valid:", accessToken);
-      console.log("lancement du picker");
+      console.log("launching picker");
       gapi.load("picker", { callback: onPickerApiLoad });
     }
   }
@@ -219,7 +213,7 @@ async function loadPicker() {
 
 function onPickerApiLoad() {
   console.log("Picker loading.");
-  // Vue en liste
+  // List view
   const docsView = new google.picker.DocsView(google.picker.ViewId.DOCUMENTS);
 
   const picker = new google.picker.PickerBuilder()
@@ -238,7 +232,7 @@ function pickerCallback(data) {
     console.log("File ID: " + fileId);
     sessionStorage.setItem("fileId", fileId);
 
-    // Remplir le champ d'URL avec l'URL complète du document sélectionné
+    // Fill the URL field with the full URL of the selected document
     const docUrl = `https://docs.google.com/document/d/${fileId}/edit`;
     document.getElementById("doc-url").value = docUrl;
 
@@ -248,7 +242,7 @@ function pickerCallback(data) {
 
 async function showFilePreview(fileId) {
   console.log("Fetching file preview for file ID: " + fileId);
-  //au cas où gapi n'est pas défini
+  // in case gapi.client is not defined
 
   if (typeof gapi.client === "undefined") {
     console.log("gapi.client is not defined. ");
@@ -269,7 +263,7 @@ async function showFilePreview(fileId) {
 
     console.log("fileName:", fileName);
 
-    //affichage d'une vue du fichier sélectionné
+    // display a view of the selected file
     var iframe = document.getElementById("file-preview");
     iframe.src = previewUrl;
     iframe.style.display = "block";
@@ -316,43 +310,26 @@ async function parseGoogleDoc(fileId) {
     const tabs = docData.tabs || [];
     const docTitle = docData.title || "Document";
 
-    // Créer un objet pour stocker toutes les listes de tous les onglets
+    // Create an object to store all lists from all tabs
     let allLists = {};
 
-    // Ajouter les listes du document principal
+    // Add lists from the main document
     if (docData.lists) {
-      // console.log(
-      //   "Listes trouvées dans le document principal:",
-      //   Object.keys(docData.lists).length
-      // );
       allLists = { ...allLists, ...docData.lists };
     }
 
-    // Ajouter les listes de chaque onglet
+    // Add lists from each tab
     if (tabs && tabs.length > 0) {
       for (const tab of tabs) {
         if (tab.documentTab && tab.documentTab.lists) {
-          // console.log(
-          //   `Listes trouvées dans l'onglet ${
-          //     tab.tabProperties?.title || "sans nom"
-          //   }:`,
-          //   Object.keys(tab.documentTab.lists).length
-          // );
           allLists = { ...allLists, ...tab.documentTab.lists };
         }
-
-        // Fonction récursive pour récupérer les listes des sous-onglets
+        // Recursive function to get lists from child tabs
         const getListsFromChildTabs = (childTabs) => {
           if (!childTabs) return;
 
           for (const childTab of childTabs) {
             if (childTab.documentTab && childTab.documentTab.lists) {
-              // console.log(
-              //   `Listes trouvées dans le sous-onglet ${
-              //     childTab.tabProperties?.title || "sans nom"
-              //   }:`,
-              //   Object.keys(childTab.documentTab.lists).length
-              // );
               allLists = { ...allLists, ...childTab.documentTab.lists };
             }
 
@@ -362,7 +339,7 @@ async function parseGoogleDoc(fileId) {
           }
         };
 
-        // Récupérer les listes des sous-onglets
+        // Get lists from child tabs
         if (tab.childTabs && tab.childTabs.length > 0) {
           getListsFromChildTabs(tab.childTabs);
         }
@@ -370,39 +347,35 @@ async function parseGoogleDoc(fileId) {
     }
 
     console.log(
-      "Total des listes trouvées dans tout le document:",
+      "Total lists found in the entire document:",
       Object.keys(allLists).length
     );
 
-    // Utiliser toutes les listes collectées au lieu de seulement docData.lists
+    // Use all collected lists instead of just docData.lists
     const docLists = allLists;
-    // console.log("docLists complet:", docLists);
 
-    // Fonction pour traiter le contenu avec l'objet lists
+    // Function to process content with the lists object
     const processTabContentWithLists = (content, lists) => {
       if (!content) return "";
       return parseTabContent(content, lists);
     };
 
-    // Générer un nom de dossier sanitisé pour le document
+    // Generate a sanitized folder name for the document
     const sanitizedTitle = docTitle
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "") // Supprimer tous les caractères spéciaux
-      .replace(/\s+/g, "-") // Remplacer les espaces par des tirets
-      .replace(/-+/g, "-") // Éviter les tirets multiples
+      .replace(/[^a-z0-9\s-]/g, "") // Remove all special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Avoid multiple hyphens
       .trim();
 
-    // Utiliser le nom du document comme nom de dossier
+    // Use the document title as the folder name
     const folderName = sanitizedTitle;
 
-    // Récupérer la liste des images existantes
+    // Get the list of existing images
     const existingImages = await getExistingImages(folderName);
-    console.log(
-      "Images existantes trouvées:",
-      Object.keys(existingImages).length
-    );
+    console.log("Existing images found:", Object.keys(existingImages).length);
 
-    // Extraire tous les IDs d'objets inline (images)
+    // Extract all inline object IDs (images)
     const inlineObjectIds = [];
     const processContent = (content) => {
       if (!content) return;
@@ -410,7 +383,7 @@ async function parseGoogleDoc(fileId) {
       for (const element of content) {
         if (element.paragraph) {
           for (const paraElement of element.paragraph.elements) {
-            // Détecter les objets inline standard (images et liens)
+            // Detect standard inline objects (images and links)
             if (
               paraElement.inlineObjectElement &&
               paraElement.inlineObjectElement.inlineObjectId
@@ -420,14 +393,14 @@ async function parseGoogleDoc(fileId) {
               );
             }
 
-            // Détecter les richLinks (liens Google Drive sous forme de puces)
+            // Detect richLinks (Google Drive links as bullets)
             else if (paraElement.richLink) {
               console.log("Found richLink:", paraElement.richLink);
               if (paraElement.richLink.richLinkId) {
                 inlineObjectIds.push(paraElement.richLink.richLinkId);
               }
             }
-            // Autres détections existantes...
+            // Other existing detections...
             else if (paraElement.embeddedObject) {
               if (paraElement.embeddedObject.embeddedObjectId) {
                 inlineObjectIds.push(
@@ -456,7 +429,7 @@ async function parseGoogleDoc(fileId) {
           }
         }
 
-        // Vérifier si l'élément lui-même est un objet inline ou un lien Drive
+        // Check if the element itself is an inline object or a Drive link
         if (
           element.inlineObjectElement &&
           element.inlineObjectElement.inlineObjectId
@@ -469,16 +442,16 @@ async function parseGoogleDoc(fileId) {
       }
     };
 
-    // Traiter le contenu principal pour trouver les objets inline
+    // Process the main document content to find inline objects
     processContent(docData.body?.content);
 
-    // Traiter les onglets pour trouver les objets inline
+    // Process the tabs to find inline objects
     for (const tab of tabs) {
       if (tab.documentTab?.body?.content) {
         processContent(tab.documentTab.body.content);
       }
 
-      // Parcourir récursivement les sous-onglets
+      // Recursively process child tabs
       const processChildTabs = (childTabs) => {
         if (!childTabs) return;
 
@@ -496,28 +469,26 @@ async function parseGoogleDoc(fileId) {
       processChildTabs(tab.childTabs);
     }
 
-    // Récupérer les données des objets inline
+    // Get inline objects data
     const inlineObjectsData = await getInlineObjectsData(
       fileId,
       inlineObjectIds
     );
 
-    // Convertir les URIs des images en base64 seulement si nécessaire
+    // Convert image URIs to base64 only if necessary
     const imagePromises = [];
     for (const id in inlineObjectsData) {
       if (inlineObjectsData[id].type === "image" && inlineObjectsData[id].uri) {
-        // Vérifier si l'image existe déjà
+        // Check if the image already exists
         if (existingImages[id]) {
-          console.log(
-            `Image ${id} déjà existante, réutilisation du fichier local`
-          );
+          console.log(`Image ${id} already exists, reusing local file`);
 
-          // Ajouter des informations sur le fichier local au lieu du base64
+          // Add local file information instead of base64
           const extension = existingImages[id].extension;
           inlineObjectsData[id].localFilePath = `images/${id}.${extension}`;
-          inlineObjectsData[id].skipProcessing = true; // Marquer pour éviter le traitement ultérieur
+          inlineObjectsData[id].skipProcessing = true; // Mark to avoid further processing
         } else {
-          // L'image n'existe pas, il faut la convertir en base64
+          // The image does not exist, convert it to base64
           imagePromises.push(
             convertImageToBase64(inlineObjectsData[id].uri).then((base64) => {
               if (base64) {
@@ -529,14 +500,14 @@ async function parseGoogleDoc(fileId) {
       }
     }
 
-    // Attendre que toutes les images soient converties
+    // Wait for all images to be converted
     await Promise.all(imagePromises);
 
-    // Structure pour stocker les données des onglets
+    // Structure to store tab data
     let tabsData = [];
 
-    // Récupérer la structure et le contenu des onglets
-    // Remplir la structure tabsData avec les onglets principaux
+    // Get the structure and content of the tabs
+    // Fill the tabsData structure with the main tabs
     if (tabs && tabs.length > 0) {
       for (const tab of tabs) {
         const tabInfo = {
@@ -548,20 +519,20 @@ async function parseGoogleDoc(fileId) {
           childTabs: [],
         };
 
-        // Récupérer le contenu de l'onglet
+        // Get the content of the tab
         if (
           tab.documentTab &&
           tab.documentTab.body &&
           tab.documentTab.body.content
         ) {
-          // Utiliser processTabContentWithLists pour passer docLists à parseTabContent
+          // Use processTabContentWithLists to pass docLists to parseTabContent
           tabInfo.content = processTabContentWithLists(
             tab.documentTab.body.content,
             docLists
           );
         }
 
-        // Récupérer les sous-onglets récursivement
+        // Get child tabs recursively
         if (tab.childTabs && tab.childTabs.length > 0) {
           getChildTabsWithLists(tab.childTabs, tabInfo.childTabs, docLists);
         }
@@ -569,7 +540,7 @@ async function parseGoogleDoc(fileId) {
         tabsData.push(tabInfo);
       }
     } else {
-      // Si pas d'onglets, créer un onglet principal avec le contenu du document
+      // If no tabs, create a main tab with the document content
       const mainTabInfo = {
         id: `main-tab-${Date.now()}`,
         title: docTitle,
@@ -579,15 +550,15 @@ async function parseGoogleDoc(fileId) {
       tabsData.push(mainTabInfo);
     }
 
-    // Traiter les chemins d'images dans le contenu des onglets
+    // Process image paths in tab content
     tabsData = processTabsContent(tabsData, inlineObjectsData, folderName);
 
-    // Générer le HTML du site
+    // Generate the site HTML
     const siteHtml = generateSiteHtml(docTitle, tabsData, inlineObjectsData);
 
-    console.log("HTML généré longueur:", siteHtml ? siteHtml.length : 0);
+    console.log("Generated HTML length:", siteHtml ? siteHtml.length : 0);
 
-    // Afficher ou télécharger le résultat
+    // Display or download the result
     displayGeneratedSite(siteHtml, inlineObjectsData, docTitle);
 
     return tabsData;
@@ -596,7 +567,7 @@ async function parseGoogleDoc(fileId) {
     return Promise.reject(error);
   }
 }
-// Fonction récursive pour obtenir tous les sous-onglets
+// Recursive function to get all child tabs
 function getChildTabsWithLists(childTabs, targetArray, docLists) {
   for (const childTab of childTabs) {
     const tabInfo = {
@@ -608,13 +579,13 @@ function getChildTabsWithLists(childTabs, targetArray, docLists) {
       childTabs: [],
     };
 
-    // Récupérer le contenu du sous-onglet - s'il a un documentTab
+    // Get the content of the child tab - if it has a documentTab
     if (
       childTab.documentTab &&
       childTab.documentTab.body &&
       childTab.documentTab.body.content
     ) {
-      // Fusionner les listes de l'onglet avec les listes déjà collectées
+      // Merge the tab's lists with the already collected lists
       if (childTab.documentTab.lists) {
         docLists = { ...docLists, ...childTab.documentTab.lists };
       }
@@ -624,7 +595,7 @@ function getChildTabsWithLists(childTabs, targetArray, docLists) {
       );
     }
 
-    // Récursivement obtenir les sous-sous-onglets
+    // Recursively get child tabs
     if (childTab.childTabs && childTab.childTabs.length > 0) {
       getChildTabsWithLists(childTab.childTabs, tabInfo.childTabs, docLists);
     }
@@ -637,20 +608,20 @@ function parseTabContent(content, docLists) {
   let htmlContent = "";
   let currentListId = null;
   let currentNestingLevel = -1;
-  let openLists = []; // Pile pour suivre les listes ouvertes avec leurs types
+  let openLists = []; // Stack to track open lists with their types
 
-  // Fonction qui détermine le type de liste et la classe CSS à utiliser
+  // Function that determines the list type and CSS class to use
   function getListTypeAndClass(bullet, nestingLevel, paragraphHtml) {
-    // Log détaillé de l'objet bullet pour inspection
+    // Detailed log of the bullet object for inspection
     console.log("DEBUG BULLET: ", JSON.stringify(bullet, null, 2));
 
     let isOrdered = false;
     let cssClass = "";
 
-    // Récupérer le listId pour accéder aux propriétés de la liste dans docLists
+    // Get the listId to access the list properties in docLists
     const listId = bullet.listId;
 
-    // Vérifier si nous avons des infos sur cette liste dans docLists
+    // Check if we have info on this list in docLists
     if (docLists && docLists[listId]) {
       const listProperties = docLists[listId].listProperties;
 
@@ -660,7 +631,7 @@ function parseTabContent(content, docLists) {
         listProperties.nestingLevels[nestingLevel]
       ) {
         const nestingLevelProps = listProperties.nestingLevels[nestingLevel];
-        console.log(`Propriétés de la liste  ${listId}:`, nestingLevelProps);
+        console.log(`List properties for ${listId}:`, nestingLevelProps);
 
         if (nestingLevelProps.glyphType) {
           const orderedTypes = [
@@ -674,7 +645,7 @@ function parseTabContent(content, docLists) {
           ];
           isOrdered = orderedTypes.includes(nestingLevelProps.glyphType);
 
-          // Déterminer la classe CSS
+          // Determine the CSS class
           if (nestingLevelProps.glyphType === "UPPER_ALPHA")
             cssClass = "upper-alpha";
           else if (nestingLevelProps.glyphType === "ALPHA")
@@ -685,9 +656,9 @@ function parseTabContent(content, docLists) {
             cssClass = "lower-roman";
 
           console.log(
-            `Liste détectée comme: ${
-              isOrdered ? "ordonnée" : "non ordonnée"
-            }, classe: ${cssClass || "aucune"}`
+            `List detected as: ${isOrdered ? "ordered" : "unordered"}, class: ${
+              cssClass || "none"
+            }`
           );
           return {
             tag: isOrdered ? "ol" : "ul",
@@ -697,13 +668,13 @@ function parseTabContent(content, docLists) {
       }
     } else {
       console.log(
-        `Liste avec ID ${listId} non trouvée dans docLists ou docLists non fourni`
+        `List with ID ${listId} not found in docLists or docLists not provided`
       );
     }
 
     console.log(
-      `RÉSULTAT FINAL: tag=${isOrdered ? "ol" : "ul"}, class=${
-        cssClass || "aucune"
+      `FINAL RESULT: tag=${isOrdered ? "ol" : "ul"}, class=${
+        cssClass || "none"
       }`
     );
 
@@ -713,12 +684,12 @@ function parseTabContent(content, docLists) {
     };
   }
 
-  // Parcourir tous les éléments du contenu
+  // Iterate through all content elements
   for (const element of content) {
     if (element.tableOfContents) {
-      // Traitement des éléments de type tableOfContents
+      // Handle tableOfContents elements
 
-      // Fermer les listes ouvertes avant d'insérer une table des matières
+      // Close open lists before inserting a table of contents
       while (openLists.length > 0) {
         const lastList = openLists.pop();
         if (openLists.length === 0) {
@@ -730,22 +701,22 @@ function parseTabContent(content, docLists) {
       currentListId = null;
       currentNestingLevel = -1;
 
-      // Générer le placeholder HTML pour la table des matières
+      // Generate the HTML placeholder for the table of contents
       htmlContent += `<div class="table-of-contents">
-        <h3>Table des matières</h3>
+        <h3>Table of Contents</h3>
         <div class="toc-placeholder" data-auto-generated="true"></div>
       </div>`;
 
-      // Ne pas traiter le contenu de l'élément tableOfContents pour éviter la duplication
+      // Do not process the content of the tableOfContents element to avoid duplication
     } else if (element.paragraph) {
       const paragraph = element.paragraph;
       let paragraphHtml = "";
 
-      // Traiter les éléments du paragraphe
+      // Process paragraph elements
       for (const paraElement of paragraph.elements || []) {
         if (paraElement.textRun) {
           const text = paraElement.textRun.content;
-          // Nettoyer le texte des caractères de contrôle
+          // Clean the text of control characters
           const cleanedText = cleanControlCharacters(text);
           const textStyle = paraElement.textRun.textStyle || {};
           let formattedText = cleanedText;
@@ -763,31 +734,31 @@ function parseTabContent(content, docLists) {
         } else if (paraElement.inlineObjectElement) {
           const objectId = paraElement.inlineObjectElement.inlineObjectId;
           if (objectId) {
-            paragraphHtml += `<span id="${objectId}" class="inline-object" data-object-id="${objectId}">[Objet en cours de chargement...]</span>`;
+            paragraphHtml += `<span id="${objectId}" class="inline-object" data-object-id="${objectId}">[Object loading...]</span>`;
           } else {
-            paragraphHtml += "[Objet intégré]";
+            paragraphHtml += "[Embedded object]";
           }
         } else if (paraElement.richLink) {
           const richLinkId = paraElement.richLink.richLinkId;
           if (richLinkId) {
-            paragraphHtml += `<span id="${richLinkId}" class="inline-object rich-link" data-object-id="${richLinkId}">[Lien Google Drive en cours de chargement...]</span>`;
+            paragraphHtml += `<span id="${richLinkId}" class="inline-object rich-link" data-object-id="${richLinkId}">[Google Drive link loading...]</span>`;
           } else {
-            paragraphHtml += "[Lien Google Drive]";
+            paragraphHtml += "[Google Drive link]";
           }
         }
       }
 
-      // détection du type de l'item de liste et de la classe CSS
+      // detect the type of list item and CSS class
       if (paragraph.bullet) {
         const listId = paragraph.bullet.listId;
-        // console.log("listId pour ce paragraphe de type bullet:", listId);
+        // console.log("listId for this bullet paragraph:", listId);
         const nestingLevel = paragraph.bullet.nestingLevel || 0;
 
         console.log(
-          `\n ${paragraphHtml.substring(0, 40)} === NIVEAU=${nestingLevel} ===`
+          `\n ${paragraphHtml.substring(0, 40)} === LEVEL=${nestingLevel} ===`
         );
 
-        // Déterminer le type et la classe de liste pour ce niveau spécifique
+        // Determine the list type and class for this specific level
         const listInfo = getListTypeAndClass(
           paragraph.bullet,
           nestingLevel,
@@ -797,20 +768,20 @@ function parseTabContent(content, docLists) {
         const listTag = listInfo.tag;
         const listClass = listInfo.class ? ` class="${listInfo.class}"` : "";
 
-        console.log(`HTML généré pour la liste: <${listTag}${listClass}>`);
+        console.log(`Generated HTML for list: <${listTag}${listClass}>`);
 
-        // Gérer les changements de liste et les niveaux d'imbrication
+        // Handle list changes and nesting levels
         if (currentListId !== listId) {
-          // Fermer toutes les listes ouvertes si c'est une nouvelle liste
+          // Close all open lists if it's a new list
           while (openLists.length > 0) {
             const lastList = openLists.pop();
             htmlContent += `</${lastList.tag}>`;
-            console.log(`Fermeture liste: </${lastList.tag}>`);
+            console.log(`Closing list: </${lastList.tag}>`);
           }
 
-          // Commencer une nouvelle liste
+          // Start a new list
           htmlContent += `<${listTag}${listClass}>`;
-          console.log(`Ouverture nouvelle liste: <${listTag}${listClass}>`);
+          console.log(`Opening new list: <${listTag}${listClass}>`);
 
           openLists.push({
             id: listId,
@@ -822,18 +793,18 @@ function parseTabContent(content, docLists) {
           currentListId = listId;
           currentNestingLevel = nestingLevel;
         }
-        // Même liste mais niveau différent
+        // Same list but different level
         else if (currentNestingLevel !== nestingLevel) {
           console.log(
-            `Changement de niveau: ${currentNestingLevel} -> ${nestingLevel}`
+            `Level change: ${currentNestingLevel} -> ${nestingLevel}`
           );
 
           if (nestingLevel > currentNestingLevel) {
-            // Avant d'ouvrir une liste imbriquée, s'assurer que nous avons fermé le <li> actuel
-            // ou ajouter un <li> si nécessaire, puis ouvrir la nouvelle liste
+            // Before opening a nested list, ensure we have closed the current <li>
+            // or add a <li> if necessary, then open the new list
             for (let i = currentNestingLevel + 1; i <= nestingLevel; i++) {
-              // Pour chaque niveau, déterminer son propre type de liste
-              // Utiliser les informations du niveau spécifique dans docLists
+              // For each level, determine its own list type
+              // Use the specific level information in docLists
               let levelInfo;
               if (
                 docLists &&
@@ -873,12 +844,12 @@ function parseTabContent(content, docLists) {
                 };
 
                 console.log(
-                  `Niveau ${i} trouvé dans docLists: type=${
-                    levelInfo.tag
-                  }, class=${levelInfo.class || "aucune"}`
+                  `Level ${i} found in docLists: type=${levelInfo.tag}, class=${
+                    levelInfo.class || "none"
+                  }`
                 );
               } else {
-                // Fallback si les informations spécifiques ne sont pas disponibles
+                // Fallback if specific information is not available
                 levelInfo = getListTypeAndClass(paragraph.bullet, i, "");
               }
 
@@ -887,10 +858,10 @@ function parseTabContent(content, docLists) {
                 ? ` class="${levelInfo.class}"`
                 : "";
 
-              // Simplement ouvrir la nouvelle liste
+              // Simply open the new list
               htmlContent += `<${levelTag}${levelClass}>`;
               console.log(
-                `Ouverture liste imbriquée niveau ${i}: <${levelTag}${levelClass}>`
+                `Opening nested list level ${i}: <${levelTag}${levelClass}>`
               );
 
               openLists.push({
@@ -898,46 +869,46 @@ function parseTabContent(content, docLists) {
                 tag: levelTag,
                 level: i,
                 class: levelInfo.class,
-                needsClosingLi: false, // Indiquer qu'il n'y a pas de <li> à fermer
+                needsClosingLi: false, // Indicate that there is no <li> to close
               });
             }
           } else {
-            // Fermer les niveaux imbriqués en trop
+            // Close excess nested levels
             const levelDiff = currentNestingLevel - nestingLevel;
             for (let i = 0; i < levelDiff; i++) {
               if (openLists.length > 1) {
                 const lastList = openLists.pop();
-                // Fermer uniquement la balise de liste sans </li>
+                // Close only the list tag without </li>
                 htmlContent += `</${lastList.tag}>`;
-                console.log(`Fermeture liste imbriquée: </${lastList.tag}>`);
+                console.log(`Closing nested list: </${lastList.tag}>`);
               }
             }
           }
           currentNestingLevel = nestingLevel;
         }
 
-        // Ajouter l'élément de liste
+        // Add the list item
         htmlContent += `<li>${paragraphHtml}`;
         console.log(
-          `Ajout élément de liste: <li>${paragraphHtml.substring(0, 20)}...`
+          `Adding list item: <li>${paragraphHtml.substring(0, 20)}...`
         );
       } else {
-        // Fermer toutes les listes ouvertes à la fin
+        // Close all open lists at the end
         while (openLists.length > 0) {
           const lastList = openLists.pop();
           if (openLists.length === 0) {
-            // Fermer le dernier élément li puis la liste
+            // Close the last <li> then the list
             htmlContent += `</li></${lastList.tag}>`;
           } else {
-            // Pour les listes imbriquées, fermer uniquement la liste
+            // For nested lists, close only the list
             htmlContent += `</${lastList.tag}>`;
           }
-          console.log(`Fermeture liste: </${lastList.tag}>`);
+          console.log(`Closing list: </${lastList.tag}>`);
         }
         currentListId = null;
         currentNestingLevel = -1;
 
-        // Traitement normal des paragraphes
+        // Normal paragraph processing
         const style =
           paragraph.paragraphStyle && paragraph.paragraphStyle.namedStyleType
             ? paragraph.paragraphStyle.namedStyleType
@@ -945,28 +916,28 @@ function parseTabContent(content, docLists) {
 
         if (style.includes("HEADING")) {
           const headingLevel = style.charAt(style.length - 1);
-          // Créer un ID basé sur le texte du titre pour les ancres
+          // Create an ID based on the heading text for anchors
           let headingId = paragraphHtml
-            .replace(/<[^>]+>/g, "") // Supprimer les balises HTML
+            .replace(/<[^>]+>/g, "") // Remove HTML tags
             .trim()
             .toLowerCase()
-            .replace(/[^\w\s-]/g, "") // Supprimer les caractères spéciaux
-            .replace(/\s+/g, "-") // Remplacer les espaces par des tirets
-            .replace(/--+/g, "-"); // Éviter les tirets multiples
+            .replace(/[^\w\s-]/g, "") // Remove special characters
+            .replace(/\s+/g, "-") // Replace spaces with hyphens
+            .replace(/--+/g, "-"); // Avoid multiple hyphens
 
-          // Ajouter un suffixe numérique unique si nécessaire
+          // Add a unique numeric suffix if necessary
           headingId = `heading-${headingId}-${Date.now()
             .toString()
             .substr(-6)}`;
 
-          // Générer le HTML du titre avec l'attribut ID
+          // Generate the heading HTML with the ID attribute
           htmlContent += `<h${headingLevel} id="${headingId}">${paragraphHtml}</h${headingLevel}>`;
         } else {
           htmlContent += `<p>${paragraphHtml}</p>`;
         }
       }
     } else if (element.table) {
-      // Fermer les listes ouvertes avant d'insérer un tableau
+      // Close open lists before inserting a table
       while (openLists.length > 0) {
         const lastList = openLists.pop();
         if (openLists.length === 0) {
@@ -979,7 +950,7 @@ function parseTabContent(content, docLists) {
       currentNestingLevel = -1;
       htmlContent += parseTableContent(element.table);
     } else if (element.sectionBreak) {
-      // Fermer les listes ouvertes avant d'insérer une séparation
+      // Close open lists before inserting a section break
       while (openLists.length > 0) {
         const lastList = openLists.pop();
         if (openLists.length === 0) {
@@ -993,22 +964,22 @@ function parseTabContent(content, docLists) {
     }
   }
 
-  // Fermer toutes les listes ouvertes à la fin
+  // Close all open lists at the end
   while (openLists.length > 0) {
     const lastList = openLists.pop();
     if (openLists.length === 0) {
-      // Pour la liste la plus externe, fermer le dernier élément li puis la liste
+      // For the outermost list, close the last <li> then the list
       htmlContent += `</li></${lastList.tag}>`;
     } else {
-      // Pour les listes imbriquées, fermer uniquement la liste
+      // For nested lists, close only the list
       htmlContent += `</${lastList.tag}>`;
     }
-    console.log(`Fermeture liste: </${lastList.tag}>`);
+    console.log(`Closing list: </${lastList.tag}>`);
   }
 
   return htmlContent;
 }
-// Fonction pour traiter le contenu des tableaux
+// Function to process table content
 function parseTableContent(table) {
   if (!table || !table.tableRows) {
     return "";
@@ -1017,24 +988,24 @@ function parseTableContent(table) {
   let tableHtml =
     "<table border='1' cellpadding='5' cellspacing='0' style='border-collapse: collapse;'>";
 
-  // Traiter chaque ligne du tableau
+  // Process each table row
   for (const row of table.tableRows) {
     tableHtml += "<tr>";
 
-    // Traiter chaque cellule de la ligne
+    // Process each cell in the row
     if (row.tableCells) {
       for (const cell of row.tableCells) {
-        // Déterminer si c'est un en-tête (première ligne)
+        // Determine if it's a header (first row)
         const isHeader = table.tableRows.indexOf(row) === 0;
         const cellTag = isHeader ? "th" : "td";
 
-        // Récupérer les propriétés de style de la cellule
+        // Get cell style properties
         let style = "";
         if (cell.tableCellStyle) {
-          // Appliquer le remplissage de la cellule si défini
+          // Apply cell padding if defined
           if (cell.tableCellStyle.backgroundColor) {
             const bg = cell.tableCellStyle.backgroundColor;
-            // Convertir la couleur RGB en hexadécimal si nécessaire
+            // Convert RGB color to hexadecimal if necessary
             if (bg.color && bg.color.rgbColor) {
               const r = Math.round((bg.color.rgbColor.red || 0) * 255);
               const g = Math.round((bg.color.rgbColor.green || 0) * 255);
@@ -1043,7 +1014,7 @@ function parseTableContent(table) {
             }
           }
 
-          // Gérer la fusion des cellules
+          // Handle cell merging
           if (
             cell.tableCellStyle.columnSpan &&
             cell.tableCellStyle.columnSpan > 1
@@ -1061,46 +1032,46 @@ function parseTableContent(table) {
           tableHtml += `<${cellTag}>`;
         }
 
-        // Traiter le contenu de la cellule
+        // Process cell content
         if (cell.content) {
           let cellContent = "";
           for (const element of cell.content) {
             if (element.paragraph) {
-              // Traiter le paragraphe dans la cellule
+              // Process paragraph in the cell
               const paragraph = element.paragraph;
               let paragraphHtml = "";
 
               if (paragraph.elements) {
-                // Convertir les éléments du paragraphe en HTML
+                // Convert paragraph elements to HTML
                 for (const paraElement of paragraph.elements) {
                   if (paraElement.textRun) {
                     const text = paraElement.textRun.content;
-                    // Nettoyer le texte des caractères de contrôle
+                    // Clean the text of control characters
                     const cleanedText = cleanControlCharacters(text);
                     const textStyle = paraElement.textRun.textStyle || {};
                     let formattedText = cleanedText;
 
                     if (textStyle.link && textStyle.link.url) {
-                      // Déterminer si c'est un lien interne (lien vers un titre du document)
+                      // Determine if it's an internal link (link to a document heading)
                       if (textStyle.link.url.startsWith("#")) {
-                        // C'est un lien interne, adapter le format de l'ancre pour correspondre à notre convention
-                        const targetText = textStyle.link.url.substring(1); // Enlever le # initial
+                        // It's an internal link, adapt the anchor format to match our convention
+                        const targetText = textStyle.link.url.substring(1); // Remove the initial #
 
-                        // Créer un ID au format identique à celui utilisé pour les titres
+                        // Create an ID in the same format used for headings
                         const targetId = `heading-${targetText
                           .toLowerCase()
                           .replace(/[^\w\s-]/g, "")
                           .replace(/\s+/g, "-")
                           .replace(/--+/g, "-")}-`;
 
-                        // Utiliser un attribut data-target pour pouvoir faire l'association ultérieurement via JavaScript
+                        // Use a data-target attribute to associate later via JavaScript
                         formattedText = `<a href="javascript:void(0)" class="toc-link" data-target="${targetId}">${formattedText}</a>`;
                       } else {
-                        // Lien externe normal
+                        // Normal external link
                         formattedText = `<a href="${textStyle.link.url}" target="_blank" rel="noopener noreferrer">${formattedText}</a>`;
                       }
                     } else {
-                      // Appliquer les styles de texte
+                      // Apply text styles
                       if (textStyle.bold) {
                         formattedText = `<strong>${formattedText}</strong>`;
                       }
@@ -1113,11 +1084,11 @@ function parseTableContent(table) {
                     }
                     paragraphHtml += formattedText;
                   } else if (paraElement.inlineObjectElement) {
-                    // Gérer les objets inline dans les tableaux
+                    // Handle inline objects in tables
                     const objectId =
                       paraElement.inlineObjectElement.inlineObjectId;
                     if (objectId) {
-                      paragraphHtml += `<span id="${objectId}" class="inline-object" data-object-id="${objectId}">[Objet en cours de chargement...]</span>`;
+                      paragraphHtml += `<span id="${objectId}" class="inline-object" data-object-id="${objectId}">[Object loading...]</span>`;
                     }
                   }
                 }
@@ -1125,7 +1096,7 @@ function parseTableContent(table) {
 
               cellContent += paragraphHtml;
             } else if (element.table) {
-              // Gérer les tableaux imbriqués
+              // Handle nested tables
               cellContent += parseTableContent(element.table);
             }
           }
@@ -1145,16 +1116,14 @@ function parseTableContent(table) {
 
 async function getInlineObjectsData(fileId, inlineObjectIds) {
   if (!inlineObjectIds || inlineObjectIds.length === 0) {
-    console.log("Aucun ID d'objet inline trouvé");
+    console.log("No inline object IDs found");
     return {};
   }
 
-  console.log(
-    `Récupération des données pour ${inlineObjectIds.length} objets inline`
-  );
+  console.log(`Fetching data for ${inlineObjectIds.length} inline objects`);
 
   try {
-    // Demander le document avec includeTabsContent: true pour obtenir tous les objets
+    // Request the document with includeTabsContent: true to get all objects
     const response = await gapi.client.docs.documents.get({
       documentId: fileId,
       includeTabsContent: true,
@@ -1162,17 +1131,17 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
 
     const docData = response.result;
 
-    // Collecter tous les inlineObjects du document principal et des onglets
+    // Collect all inlineObjects from the main document and tabs
     const allInlineObjects = {};
-    // Au lieu d'une collection séparée, nous allons stocker les richLinks par ID dans un objet
+    // Instead of a separate collection, we will store richLinks by ID in an object
     const allRichLinks = {};
 
-    // Ajouter les inlineObjects du document principal
+    // Add inlineObjects from the main document
     if (docData.inlineObjects) {
       Object.assign(allInlineObjects, docData.inlineObjects);
     }
 
-    // Fonction pour extraire les richLinks du contenu
+    // Function to extract richLinks from content
     const extractRichLinks = (content) => {
       if (!content) return;
 
@@ -1180,14 +1149,14 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
         if (element.paragraph && element.paragraph.elements) {
           for (const paraElement of element.paragraph.elements) {
             if (paraElement.richLink && paraElement.richLink.richLinkId) {
-              // Stocker le richLink par son ID
+              // Store the richLink by its ID
               allRichLinks[paraElement.richLink.richLinkId] =
                 paraElement.richLink;
             }
           }
         }
 
-        // Parcourir récursivement les tableaux
+        // Recursively process tables
         if (element.table && element.table.tableRows) {
           for (const row of element.table.tableRows) {
             if (row.tableCells) {
@@ -1202,29 +1171,29 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
       }
     };
 
-    // Extraire les richLinks du document principal
+    // Extract richLinks from the main document
     if (docData.body && docData.body.content) {
       extractRichLinks(docData.body.content);
     }
 
-    // Fonction récursive pour extraire les inlineObjects et richLinks des onglets
+    // Recursive function to extract inlineObjects and richLinks from tabs
     const extractObjectsFromTabs = (tabs) => {
       if (!tabs) return;
 
       for (const tab of tabs) {
-        // Extraire les inlineObjects de chaque onglet
+        // Extract inlineObjects from each tab
         if (tab.documentTab && tab.documentTab.inlineObjects) {
           console.log(
-            `Trouvé ${
+            `Found ${
               Object.keys(tab.documentTab.inlineObjects).length
-            } objets inline dans l'onglet ${
-              tab.tabProperties?.title || "sans nom"
+            } inline objects in the tab ${
+              tab.tabProperties?.title || "untitled"
             }`
           );
           Object.assign(allInlineObjects, tab.documentTab.inlineObjects);
         }
 
-        // Extraire les richLinks du contenu de chaque onglet
+        // Extract richLinks from the content of each tab
         if (
           tab.documentTab &&
           tab.documentTab.body &&
@@ -1233,43 +1202,41 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
           extractRichLinks(tab.documentTab.body.content);
         }
 
-        // Explorer récursivement les sous-onglets
+        // Recursively explore child tabs
         if (tab.childTabs && tab.childTabs.length > 0) {
           extractObjectsFromTabs(tab.childTabs);
         }
       }
     };
 
-    // Traiter les onglets s'ils existent
+    // Process tabs if they exist
     if (docData.tabs && docData.tabs.length > 0) {
       extractObjectsFromTabs(docData.tabs);
     }
 
     console.log(
-      `Total d'objets inline trouvés: ${Object.keys(allInlineObjects).length}`
+      `Total inline objects found: ${Object.keys(allInlineObjects).length}`
     );
-    console.log(
-      `Total de richLinks trouvés: ${Object.keys(allRichLinks).length}`
-    );
-    console.log(`IDs demandés: ${inlineObjectIds.length}`);
+    console.log(`Total richLinks found: ${Object.keys(allRichLinks).length}`);
+    console.log(`Requested IDs: ${inlineObjectIds.length}`);
 
     const objectsData = {};
 
     for (const id of inlineObjectIds) {
-      // Vérifier si c'est un objet inline standard (image)
+      // Check if it's a standard inline object (image)
       if (allInlineObjects[id]) {
         const inlineObject = allInlineObjects[id];
         const embeddedObject =
           inlineObject.inlineObjectProperties?.embeddedObject;
 
-        // Vérifier si c'est une image
+        // Check if it's an image
         let embedId = embeddedObject?.imageProperties?.contentUri;
         if (!embedId && embeddedObject?.imageProperties?.sourceUri) {
           embedId = embeddedObject.imageProperties.sourceUri;
         }
 
         if (embedId) {
-          // C'est une image, récupérer ses propriétés
+          // It's an image, get its properties
           let width = null;
           let height = null;
           let rotation = null;
@@ -1292,35 +1259,35 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
             rotation: rotation,
           };
           console.log(
-            `URI trouvée pour l'image ${id}: ${embedId}, dimensions: ${width}x${height}`
+            `URI found for image ${id}: ${embedId}, dimensions: ${width}x${height}`
           );
         } else {
-          console.warn(`Type d'objet non reconnu pour ${id}`, embeddedObject);
+          console.warn(`Unrecognized object type for ${id}`, embeddedObject);
         }
       }
-      // Vérifier si c'est un richLink
+      // Check if it's a richLink
       else if (allRichLinks[id]) {
         const richLink = allRichLinks[id];
-        console.log(`Analyse du richLink ${id}:`, richLink);
+        console.log(`Analyzing richLink ${id}:`, richLink);
 
-        // Extraire l'URL et les métadonnées du richLink
+        // Extract the URL and metadata from the richLink
         let uri = richLink.uri;
-        let title = richLink.title || "Lien vers fichier";
+        let title = richLink.title || "Link to file";
         let description = richLink.description || "";
         let mimeType = null;
 
-        // Vérifier aussi dans richLinkProperties (c'est la structure habituelle)
+        // Also check in richLinkProperties (this is the usual structure)
         if (richLink.richLinkProperties) {
           uri = uri || richLink.richLinkProperties.uri;
           title = richLink.richLinkProperties.title || title;
           mimeType = richLink.richLinkProperties.mimeType || null;
         }
 
-        // Déterminer le type de fichier pour l'icône en fonction du MIME Type ou de l'URL
+        // Determine the file type for the icon based on MIME Type or URL
         let fileType = "document";
         let fileTypeSource = "default";
 
-        // Si nous avons un mimeType, l'utiliser en priorité
+        // If we have a mimeType, use it as priority
         if (mimeType) {
           fileTypeSource = "mime-type";
           if (mimeType.includes("spreadsheet")) {
@@ -1344,10 +1311,10 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
             fileType = "document";
           }
         }
-        // Si pas de mimeType ou si c'est resté à "document" par défaut, essayer avec l'URI
+        // If no mimeType or if it remained "document" by default, try with the URI
         else if (uri) {
           fileTypeSource = "uri";
-          // Extensions d'images courantes
+          // Common image extensions
           const imageExtensions = [
             ".jpg",
             ".jpeg",
@@ -1358,7 +1325,7 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
             ".svg",
             ".tiff",
           ];
-          // Extensions vidéo courantes
+          // Common video extensions
           const videoExtensions = [
             ".mp4",
             ".webm",
@@ -1369,7 +1336,7 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
             ".mkv",
           ];
 
-          // Vérifier si l'URL correspond à un service Google
+          // Check if the URL matches a Google service
           if (uri.includes("spreadsheets")) {
             fileType = "spreadsheet";
           } else if (uri.includes("presentation")) {
@@ -1381,19 +1348,19 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
           } else if (uri.includes("youtube") || uri.includes("youtu.be")) {
             fileType = "video";
           } else {
-            // Vérifier les extensions de fichiers
+            // Check file extensions
             const lowerUrl = uri.toLowerCase();
 
-            // Vérifier si c'est une image
+            // Check if it's an image
             if (imageExtensions.some((ext) => lowerUrl.endsWith(ext))) {
               fileType = "image";
             }
-            // Vérifier si c'est une vidéo
+            // Check if it's a video
             else if (videoExtensions.some((ext) => lowerUrl.endsWith(ext))) {
               fileType = "video";
             }
 
-            // Vérifier aussi dans le titre si c'est une image/vidéo
+            // Also check in the title if it's an image/video
             if (fileType === "document" && title) {
               const lowerTitle = title.toLowerCase();
               if (imageExtensions.some((ext) => lowerTitle.endsWith(ext))) {
@@ -1410,7 +1377,7 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
         }
 
         console.log(
-          `Detection RichLink: ID=${id}, URL=${uri}, MIME=${mimeType}, détecté comme type=${fileType} (source: ${fileTypeSource})`
+          `RichLink detection: ID=${id}, URL=${uri}, MIME=${mimeType}, detected as type=${fileType} (source: ${fileTypeSource})`
         );
 
         objectsData[id] = {
@@ -1423,19 +1390,17 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
           fileTypeSource: fileTypeSource,
         };
         console.log(
-          `RichLink traité: ${id}, URL: ${uri}, Title: ${title}, Type: ${fileType}`
+          `Processed richLink: ${id}, URL: ${uri}, Title: ${title}, Type: ${fileType}`
         );
       } else {
-        console.warn(
-          `Objet ${id} non trouvé dans les inlineObjects ni dans les richLinks`
-        );
+        console.warn(`Object ${id} not found in inlineObjects or richLinks`);
       }
     }
 
     console.log(
-      `Données récupérées pour ${Object.keys(objectsData).length} sur ${
+      `Data retrieved for ${Object.keys(objectsData).length} out of ${
         inlineObjectIds.length
-      } objets`
+      } objects`
     );
     return objectsData;
   } catch (error) {
@@ -1445,17 +1410,17 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
 }
 
 function generateSiteHtml(docTitle, tabsData, objectData) {
-  // Créer une copie de objectData sans les données base64 pour le script
+  // Create a copy of objectData without base64 data for the script
   const scriptObjectData = {};
   for (const [key, value] of Object.entries(objectData)) {
     scriptObjectData[key] = { ...value };
 
-    // Supprimer les données base64 volumineuses du script
+    // Remove large base64 data from the script
     if (scriptObjectData[key].type === "image") {
-      // Conserver uniquement les métadonnées, pas le contenu base64
+      // Keep only metadata, not base64 content
       delete scriptObjectData[key].base64;
 
-      // Ajouter le chemin local de l'image pour le script
+      // Add the local image path for the script
       const mimeType = value.base64
         ? value.base64.split(";")[0].split(":")[1]
         : "image/png";
@@ -1464,11 +1429,11 @@ function generateSiteHtml(docTitle, tabsData, objectData) {
     }
   }
 
-  // Convertir les données d'objets inline (sans base64) en chaîne JSON pour le script
+  // Convert inline object data (without base64) to JSON string for the script
   const imageDataString = JSON.stringify(scriptObjectData);
 
-  // Remplacer les chemins d'image dans le HTML
-  let processedTabsData = JSON.parse(JSON.stringify(tabsData)); // Clone profond
+  // Replace image paths in the HTML
+  let processedTabsData = JSON.parse(JSON.stringify(tabsData)); // Deep clone
   processedTabsData = processTabsContent(processedTabsData, objectData);
 
   const html = `
@@ -1495,23 +1460,23 @@ function generateSiteHtml(docTitle, tabsData, objectData) {
   document.addEventListener('DOMContentLoaded', function() {
     const objectData = ${imageDataString};
     
-    // Configuration du menu responsive
+    // Configuration of the responsive menu
     const sidebar = document.querySelector('.sidebar');
     const menuButton = document.querySelector('.menu-toggle');
     
-    // Gérer l'affichage du menu sur mobile
+    // Handle menu display on mobile
     menuButton.addEventListener('click', function() {
       sidebar.classList.toggle('expanded');
-      this.innerHTML = sidebar.classList.contains('expanded') ? '✕ Fermer' : '☰ Menu';
+      this.innerHTML = sidebar.classList.contains('expanded') ? '✕ Close' : '☰ Menu';
     });
     
-    // Cacher tous les onglets sauf le premier
+    // Hide all tabs except the first one
     const tabContents = document.querySelectorAll('.tab-content');
     tabContents.forEach(tab => {
       tab.style.display = "none";
     });
     
-    // Afficher le premier onglet par défaut
+    // Display the first tab by default
     const firstTab = document.querySelector('.tab-content');
     const firstLink = document.querySelector('.nav-link');
     if (firstTab) {
@@ -1520,27 +1485,27 @@ function generateSiteHtml(docTitle, tabsData, objectData) {
     }
     if (firstLink) firstLink.classList.add('active');
     
-    // Fonction pour remplacer tous les objets inline
+    // Function to replace all inline objects
     const replaceInlineObjects = (container) => {
-      // Remplacer les objets inline
+      // Replace inline objects
       container.querySelectorAll('span.inline-object').forEach(obj => {
         const objectId = obj.getAttribute('data-object-id');
         if (!objectId || !objectData[objectId]) {
-          obj.textContent = '[Objet non disponible]';
+          obj.textContent = '[Object not available]';
           return;
         }
         
         const data = objectData[objectId];
         
         if (data.type === 'driveFile') {
-          // Créer un élément de lien Drive
+          // Create a Drive link element
           const link = document.createElement('a');
           link.href = data.url;
           link.target = '_blank';
           link.rel = 'noopener noreferrer';
           link.className = 'drive-file-link';
           
-          // Déterminer l'icône selon le type de fichier
+          // Determine the icon based on the file type
           let iconSvg = '';
           switch(data.fileType) {
             case 'spreadsheet':
@@ -1570,26 +1535,26 @@ function generateSiteHtml(docTitle, tabsData, objectData) {
             </div>
           \`;
           
-          // Remplacer le placeholder par le lien
+          // Replace the placeholder with the link
           obj.parentNode.replaceChild(link, obj);
-          console.log('Lien Drive remplacé pour objectId:', objectId);
+          console.log('Drive link replaced for objectId:', objectId);
         }
       });
     };
     
-    // Fonction pour générer automatiquement les tables des matières
+    // Function to automatically generate tables of contents
     const generateTableOfContents = () => {
       const activeTab = document.querySelector('.tab-content.active');
       const tocPlaceholders = activeTab ? activeTab.querySelectorAll('.toc-placeholder[data-auto-generated="true"]') : [];
       
       if (tocPlaceholders.length === 0) return;
       
-      // Trouver tous les titres dans l'onglet actif
+      // Find all headings in the active tab
       const headings = activeTab.querySelectorAll('h1[id]:not(.tab_title), h2[id], h3[id], h4[id], h5[id], h6[id]');
       
       if (headings.length === 0) return;
       
-      // Générer le HTML de la table des matières
+      // Generate the HTML for the table of contents
       const tocHtml = document.createElement('ul');
       tocHtml.className = 'toc-list';
       
@@ -1606,7 +1571,7 @@ function generateSiteHtml(docTitle, tabsData, objectData) {
           e.preventDefault();
           heading.scrollIntoView({ behavior: 'smooth' });
           
-          // Mettre en évidence temporairement le titre cible
+          // Temporarily highlight the target heading
           const originalBg = heading.style.backgroundColor;
           heading.style.backgroundColor = '#ffff99';
           setTimeout(() => {
@@ -1618,33 +1583,33 @@ function generateSiteHtml(docTitle, tabsData, objectData) {
         tocHtml.appendChild(item);
       });
       
-      // Remplir les placeholders
+      // Fill the placeholders
       tocPlaceholders.forEach(placeholder => {
         placeholder.innerHTML = '';
         placeholder.appendChild(tocHtml.cloneNode(true));
       });
     };
     
-    // Remplacer les objets dans l'onglet actif initial
+    // Replace objects in the initial active tab
     replaceInlineObjects(firstTab);
     
-    // Générer les tables des matières
+    // Generate tables of contents
     generateTableOfContents();
     
-    // Ajouter des écouteurs d'événements à tous les liens de navigation
+    // Add event listeners to all navigation links
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
       link.addEventListener('click', function(e) {
         e.preventDefault();
         
-        // Supprimer la classe active de tous les liens et contenus
+        // Remove the active class from all links and contents
         navLinks.forEach(l => l.classList.remove('active'));
         tabContents.forEach(tab => {
           tab.classList.remove('active');
           tab.style.display = "none";
         });
         
-        // Ajouter la classe active au lien et contenu cliqués
+        // Add the active class to the clicked link and content
         this.classList.add('active');
         const targetId = this.getAttribute('href').substring(1);
         const targetTab = document.getElementById(targetId);
@@ -1652,16 +1617,16 @@ function generateSiteHtml(docTitle, tabsData, objectData) {
           targetTab.classList.add('active');
           targetTab.style.display = "block";
           
-          // Remplacer les objets dans l'onglet nouvellement affiché
+          // Replace objects in the newly displayed tab
           replaceInlineObjects(targetTab);
           
-          // Générer les tables des matières pour le nouvel onglet
+          // Generate tables of contents for the new tab
           setTimeout(() => {
             generateTableOfContents();
           }, 100);
         }
         
-        // Fermer le menu sur mobile après sélection d'un onglet
+        // Close the menu on mobile after selecting a tab
         if (window.innerWidth <= 768) {
           sidebar.classList.remove('expanded');
           menuButton.innerHTML = '☰ Menu';
@@ -1676,7 +1641,7 @@ function generateSiteHtml(docTitle, tabsData, objectData) {
 
   return html;
 }
-// Fonction pour générer le menu de navigation avec une structure récursive
+// Function to generate the navigation menu with a recursive structure
 function generateNavigationMenu(tabsData, level = 0) {
   if (!tabsData || tabsData.length === 0) return "";
 
@@ -1697,7 +1662,7 @@ function generateNavigationMenu(tabsData, level = 0) {
   return menuHtml;
 }
 
-// Fonction pour récupérer les images existantes
+// Function to get existing images
 async function getExistingImages(folderName = "") {
   try {
     const response = await fetch("list_images.php", {
@@ -1711,21 +1676,18 @@ async function getExistingImages(folderName = "") {
     });
 
     if (!response.ok) {
-      console.warn("Impossible de récupérer la liste des images existantes");
+      console.warn("Unable to fetch the list of existing images");
       return {};
     }
     const data = await response.json();
     return data.success ? data.images : {};
   } catch (error) {
-    console.warn(
-      "Erreur lors de la récupération des images existantes:",
-      error
-    );
+    console.warn("Error fetching existing images:", error);
     return {};
   }
 }
 
-// Fonction pour générer le contenu des onglets
+// Function to generate tab content
 function generateTabContent(tabsData) {
   let contentHtml = "";
 
@@ -1743,40 +1705,40 @@ function generateTabContent(tabsData) {
   return contentHtml;
 }
 
-//  fonction pour prétraiter le contenu des onglets et adapter les liens d'images
+//  function to preprocess tab content and adjust image links
 
 function processTabsContent(tabsData, objectData, folderName = "") {
   for (const tab of tabsData) {
-    // Traiter le contenu HTML pour ajuster les chemins d'images
+    // Process HTML content to adjust image paths
     if (tab.content) {
       tab.content = tab.content.replace(
-        /<span id="([^"]+)" class="inline-object" data-object-id="([^"]+)">\[Objet en cours de chargement\.\.\.\]<\/span>/g,
+        /<span id="([^"]+)" class="inline-object" data-object-id="([^"]+)">\[Object loading...\]<\/span>/g,
         (match, id, objectId) => {
           const obj = objectData[objectId];
           if (!obj) return match;
 
           if (obj.type === "image") {
-            // Déterminer l'extension à partir du type MIME ou utiliser .png par défaut
+            // Determine the extension from the MIME type or use .png by default
             const mimeType = obj.base64
               ? obj.base64.split(";")[0].split(":")[1]
               : "image/png";
             const extension = mimeType.split("/")[1] || "png";
 
-            // Ajouter les attributs de largeur et hauteur si disponibles
+            // Add width and height attributes if available
             const widthAttr = obj.width ? ` width="${obj.width}"` : "";
             const heightAttr = obj.height ? ` height="${obj.height}"` : "";
 
-            // Si une rotation est spécifiée, ajouter un style CSS
+            // If a rotation is specified, add a CSS style
             const rotationStyle = obj.rotation
               ? ` style="transform: rotate(${obj.rotation}rad);"`
               : "";
 
-            // Utiliser le chemin relatif correct pour les images
+            // Use the correct relative path for images
             const imagePath = "images";
 
             return `<img src="${imagePath}/${objectId}.${extension}" alt="Image" class="inline-image" id="${id}" data-object-id="${objectId}"${widthAttr}${heightAttr}${rotationStyle}>`;
           } else if (obj.type === "driveFile") {
-            // Garder le contenu tel quel pour les fichiers Drive
+            // Keep the content as is for Drive files
             return match;
           }
           return match;
@@ -1784,7 +1746,7 @@ function processTabsContent(tabsData, objectData, folderName = "") {
       );
     }
 
-    // Traiter récursivement les sous-onglets
+    // Recursively process child tabs
     if (tab.childTabs && tab.childTabs.length > 0) {
       tab.childTabs = processTabsContent(tab.childTabs, objectData, folderName);
     }
@@ -1794,44 +1756,41 @@ function processTabsContent(tabsData, objectData, folderName = "") {
 }
 async function saveGeneratedSite(htmlContent, imagesData, docTitle) {
   try {
-    // Générer un nom de dossier sanitisé basé uniquement sur le titre du document
+    // Generate a sanitized folder name based solely on the document title
     const sanitizedTitle = docTitle
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "") // Supprimer tous les caractères spéciaux
-      .replace(/\s+/g, "-") // Remplacer les espaces par des tirets
-      .replace(/-+/g, "-") // Éviter les tirets multiples
+      .replace(/[^a-z0-9\s-]/g, "") // Remove all special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Avoid multiple hyphens
       .trim();
 
-    // Utiliser uniquement le titre sanitisé comme nom de dossier
+    // Use only the sanitized title as the folder name
     const folderName = sanitizedTitle;
 
-    // Créer le dossier de sortie principal et les sous-dossiers (ou réutiliser s'il existe)
+    // Create the main output folder and subfolders (or reuse if it exists)
     const createFoldersResponse = await fetch("create_folders.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        mainFolder: folderName, // Passer le nom du dossier unique au script PHP
+        mainFolder: folderName, // Pass the unique folder name to the PHP script
       }),
     });
 
     if (!createFoldersResponse.ok) {
       throw new Error(
-        `Erreur lors de la création des dossiers: ${createFoldersResponse.status}`
+        `Error creating folders: ${createFoldersResponse.status}`
       );
     }
 
     const folderInfo = await createFoldersResponse.json();
-    console.log("Information sur le dossier:", folderInfo);
+    console.log("Folder information:", folderInfo);
 
-    // Sauvegarder le fichier HTML principal dans le dossier unique
+    // Save the main HTML file in the unique folder
     const filename = `${folderName}/index.html`;
 
-    console.log(
-      "Sauvegarde du HTML, longueur:",
-      htmlContent ? htmlContent.length : 0
-    );
+    console.log("Saving HTML, length:", htmlContent ? htmlContent.length : 0);
 
     const saveHtmlResponse = await fetch("save_file.php", {
       method: "POST",
@@ -1845,40 +1804,35 @@ async function saveGeneratedSite(htmlContent, imagesData, docTitle) {
     });
 
     if (!saveHtmlResponse.ok) {
-      throw new Error(
-        `Erreur lors de la sauvegarde du fichier HTML: ${saveHtmlResponse.status}`
-      );
+      throw new Error(`Error saving HTML file: ${saveHtmlResponse.status}`);
     }
 
     const saveHtmlResponseData = await saveHtmlResponse.json();
-    console.log(
-      "Réponse du serveur après sauvegarde HTML:",
-      saveHtmlResponseData
-    );
+    console.log("Server response after HTML save:", saveHtmlResponseData);
 
-    // Traiter et sauvegarder chaque image dans le sous-dossier d'images
+    // Process and save each image in the images subfolder
     const savedImages = {};
 
     for (const [objectId, imageData] of Object.entries(imagesData)) {
       if (imageData.type === "image") {
         try {
-          // Si l'image a un chemin local, elle existe déjà et n'a pas besoin d'être sauvegardée
+          // If the image has a local path, it already exists and does not need to be saved
           if (imageData.skipProcessing && imageData.localFilePath) {
             console.log(
-              `Image ${objectId} déjà existante, réutilisation: ${imageData.localFilePath}`
+              `Image ${objectId} already exists, reusing: ${imageData.localFilePath}`
             );
             savedImages[objectId] = imageData.localFilePath;
             continue;
           }
 
-          // Sinon, sauvegarder l'image si elle a des données base64
+          // Otherwise, save the image if it has base64 data
           if (imageData.base64) {
-            // Extraire l'extension à partir du type MIME ou utiliser .png par défaut
+            // Extract the extension from the MIME type or use .png by default
             const mimeType =
               imageData.base64.split(";")[0].split(":")[1] || "image/png";
             const extension = mimeType.split("/")[1] || "png";
 
-            // Chemin relatif au dossier unique
+            // Relative path to the unique folder
             const imageFilename = `${folderName}/images/${objectId}.${extension}`;
 
             const response = await fetch("save_image.php", {
@@ -1894,39 +1848,32 @@ async function saveGeneratedSite(htmlContent, imagesData, docTitle) {
 
             if (!response.ok) {
               throw new Error(
-                `Erreur HTTP ${response.status}: ${await response.text()}`
+                `HTTP error ${response.status}: ${await response.text()}`
               );
             }
 
             const data = await response.json();
             if (!data.success) {
               throw new Error(
-                `Échec de sauvegarde: ${data.message || "Erreur inconnue"}`
+                `Save failed: ${data.message || "Unknown error"}`
               );
             }
 
-            // Enregistrer le chemin local de l'image pour mise à jour HTML
+            // Save the local image path for HTML update
             savedImages[objectId] = data.path;
-            console.log(
-              `Image ${objectId} sauvegardée avec succès à ${data.path}`
-            );
+            console.log(`Image ${objectId} saved successfully at ${data.path}`);
           }
         } catch (imageError) {
-          console.error(
-            `Erreur lors du traitement de l'image ${objectId}:`,
-            imageError
-          );
-          // Continuer avec les autres images même si une échoue
+          console.error(`Error processing image ${objectId}:`, imageError);
+          // Continue with other images even if one fails
         }
       }
     }
 
-    // Obtenir l'URL de base pour accéder au site généré
+    // Get the base URL to access the generated site
     const baseUrlResponse = await fetch("get_base_url.php");
     if (!baseUrlResponse.ok) {
-      throw new Error(
-        `Erreur lors de l'obtention de l'URL de base: ${baseUrlResponse.status}`
-      );
+      throw new Error(`Error getting base URL: ${baseUrlResponse.status}`);
     }
 
     const { baseUrl } = await baseUrlResponse.json();
@@ -1940,7 +1887,7 @@ async function saveGeneratedSite(htmlContent, imagesData, docTitle) {
       folderExisted: folderInfo.exists || false,
     };
   } catch (error) {
-    console.error("Erreur lors de la sauvegarde du site:", error);
+    console.error("Error saving site:", error);
     return {
       success: false,
       error: error.message,
@@ -1949,22 +1896,22 @@ async function saveGeneratedSite(htmlContent, imagesData, docTitle) {
 }
 async function displayGeneratedSite(htmlContent, imageData, docTitle) {
   try {
-    // Afficher un message de chargement
+    // Display a loading message
     const resultContainer =
       document.getElementById("parse-result") || document.body;
     resultContainer.innerHTML = `
       <div style="text-align: center; padding: 20px;">
-        <p>Génération du site en cours...</p>
+        <p>Generating site...</p>
         <div class="spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
       </div>
       <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
     `;
 
-    // Sauvegarder le site et les images
+    // Save the site and images
     const result = await saveGeneratedSite(htmlContent, imageData, docTitle);
 
     if (result.success) {
-      // Créer l'interface utilisateur pour accéder au site généré
+      // Create the UI to access the generated site
       const downloadContainer = document.createElement("div");
       downloadContainer.style.marginTop = "20px";
       downloadContainer.style.padding = "15px";
@@ -1973,14 +1920,14 @@ async function displayGeneratedSite(htmlContent, imageData, docTitle) {
       downloadContainer.style.borderRadius = "5px";
 
       const downloadHeading = document.createElement("h3");
-      downloadHeading.textContent = "Site généré avec succès !";
+      downloadHeading.textContent = "Site generated successfully!";
       downloadHeading.style.color = "#34a853";
 
       const siteLink = document.createElement("a");
       siteLink.href = result.url;
       siteLink.target = "_blank";
       siteLink.className = "site-link";
-      siteLink.textContent = "Voir le site généré";
+      siteLink.textContent = "View generated site";
       siteLink.style.display = "inline-block";
       siteLink.style.padding = "10px 15px";
       siteLink.style.backgroundColor = "#4285f4";
@@ -1997,23 +1944,23 @@ async function displayGeneratedSite(htmlContent, imageData, docTitle) {
       pathInfo.style.border = "1px solid #4285f4";
 
       pathInfo.innerHTML = `
-        <p><strong>Informations :</strong></p>
+        <p><strong>Information:</strong></p>
         <ul>
-          <li>Le site a été généré dans le dossier <code>output/${
+          <li>The site was generated in the folder <code>output/${
             result.folder
           }/</code></li>
-          <li>Fichier HTML principal : <code>output/${
+          <li>Main HTML file: <code>output/${
             result.folder
           }/index.html</code></li>
-          <li>Images : <code>output/${result.folder}/images/</code></li>
+          <li>Images: <code>output/${result.folder}/images/</code></li>
           <li>${
             result.folderExisted
-              ? "Le dossier existait déjà, son contenu a été mis à jour."
-              : "Un nouveau dossier a été créé pour ce document."
+              ? "The folder already existed, its content has been updated."
+              : "A new folder was created for this document."
           }</li>
-          <li>Vous pouvez copier tout le contenu du dossier <code>output/${
+          <li>You can copy all the content of the folder <code>output/${
             result.folder
-          }</code> pour l'héberger ailleurs</li>
+          }</code> to host it elsewhere</li>
         </ul>
       `;
 
@@ -2024,15 +1971,15 @@ async function displayGeneratedSite(htmlContent, imageData, docTitle) {
       resultContainer.innerHTML = "";
       resultContainer.appendChild(downloadContainer);
 
-      // Ouvrir le site dans un nouvel onglet
+      // Open the site in a new tab
       window.open(result.url, "_blank");
     } else {
-      // Afficher un message d'erreur
+      // Display an error message
       resultContainer.innerHTML = `
         <div style="padding: 20px; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px;">
-          <h3>Erreur lors de la génération du site</h3>
+          <h3>Error generating site</h3>
           <p>${result.error}</p>
-          <p>Veuillez vérifier les permissions d'écriture dans le dossier "output" de votre serveur.</p>
+          <p>Please check the write permissions in the "output" folder of your server.</p>
         </div>
       `;
     }
@@ -2042,7 +1989,7 @@ async function displayGeneratedSite(htmlContent, imageData, docTitle) {
       document.getElementById("parse-result") || document.body;
     resultContainer.innerHTML = `
       <div style="padding: 20px; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px;">
-        <h3>Erreur inattendue</h3>
+        <h3>Unexpected error</h3>
         <p>${error.message}</p>
       </div>
     `;
@@ -2052,7 +1999,7 @@ async function convertImageToBase64(url) {
   try {
     console.log("Converting image to base64:", url);
 
-    // Vérifier si l'URL est déjà en base64
+    // Check if the URL is already in base64
     if (url.startsWith("data:image")) {
       console.log("URL is already in base64 format, returning as is");
       return url;
@@ -2071,12 +2018,10 @@ async function convertImageToBase64(url) {
       return null;
     }
 
-    // Vérifier le type de contenu pour confirmer que c'est bien une image
+    // Check the content type to confirm it's an image
     const contentType = response.headers.get("content-type");
     if (contentType && !contentType.startsWith("image/")) {
-      console.warn(
-        `Le contenu n'est pas une image (${contentType}). URL: ${url}`
-      );
+      console.warn(`Content is not an image (${contentType}). URL: ${url}`);
     }
 
     const blob = await response.blob();
@@ -2106,9 +2051,9 @@ async function convertImageToBase64(url) {
 function cleanControlCharacters(text) {
   if (!text) return text;
 
-  // Ne supprimer que les caractères problématiques spécifiques
+  // Only remove specific problematic characters
   return text
     .replace(/\u000B/g, "") // Vertical Tab
     .replace(/\u000C/g, "") // Form Feed
-    .replace(/[\u0000-\u0008\u000E-\u001F\u007F-\u009F]/g, ""); // Autres caractères de contrôle
+    .replace(/[\u0000-\u0008\u000E-\u001F\u007F-\u009F]/g, ""); // Other control characters
 }
