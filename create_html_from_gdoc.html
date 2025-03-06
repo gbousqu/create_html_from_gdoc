@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>conversion d'un Google Doc à onglets en un site HTML</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        font-size: 0.8em;
+      }
+      #file-preview {
+        transform: scale(0.75);
+        transform-origin: 0 0;
+        width: 1500px;
+        height: 400px;
+        display: none;
+        border: solid 2px #1d1d1d;
+        margin-bottom: -100px; /* Fix for iframe height */
+        margin-top: 20px;
+      }
+      #warning-message {
+        color: red;
+        display: none;
+      }
+      #OpenAI-prompt-container {
+        margin-top: 5px;
+        display: none;
+      }
+      p {
+        margin: 0;
+        padding: 0;
+      }
+
+      #parse-result {
+        margin-top: 10px;
+        min-height: 100px;
+      }
+
+      #parse-result table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      #parse-result th,
+      #parse-result td {
+        border: none;
+        padding: 2px;
+        text-align: left;
+      }
+
+      /* Style pour la première ligne du tableau */
+      #parse-result table tr:first-child th {
+        background-color: #d3d3d3; /* Couleur de fond différente */
+        color: #000; /* Couleur du texte différente */
+        font-weight: bold; /* Texte en gras */
+      }
+
+      /* Style pour les autres lignes du tableau */
+      #parse-result table tr:not(:first-child) td {
+        border-bottom: 1px solid #d3d3d3;
+      }
+
+      /* Style pour les lignes avec un style différent de NORMAL_TEXT */
+      .highlight-row {
+        background-color: #afaeb3; /* Couleur de fond différente */
+      }
+      #documentXmlInput,
+      #stylesXmlInput {
+        display: none;
+      }
+
+      .custom-file-upload {
+        display: inline-block;
+        padding: 6px 12px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+      }
+      #document-file-name,
+      #styles-file-name {
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <label for="client-id">Client ID:</label>
+    <input type="text" id="client-id" />
+    <br />
+    <label for="Google-api-key">Google API Key:</label>
+    <input type="text" id="Google-api-key" />
+    <br />
+    <label for="OpenAI-api-key">OpenAI API Key:</label>
+    <input type="text" id="OpenAI-api-key" />
+    <br />
+    <div id="warning-message">Client ID and API Key are required.</div>
+    <br />
+
+    <h1>Choisir un gdoc à convertir en html (il peut contenir des onglets)</h1>
+    <h3>Utiliser un sélecteur de fichier de Google Drive</h3>
+
+    <button id="login-button">Login with Google</button>
+    <button
+      id="pick-file"
+      style="display: block; margin-top: 10px; margin-bottom: 10px"
+    >
+      Pick a file from Google Drive
+    </button>
+
+    <!-- Ajoutez ce code HTML à votre page principale -->
+    <div class="url-input-container">
+      <h3>Ou entrer directement une URL Google Doc</h3>
+      <form id="url-form">
+        <input
+          type="url"
+          id="doc-url"
+          placeholder="https://docs.google.com/document/d/DOCUMENT_ID/edit"
+          style="width: 80%; padding: 8px; margin-right: 10px"
+        />
+        <button type="submit" class="btn">Charger ce document</button>
+      </form>
+      <p class="hint">Format accepté: https://docs.google.com/document/d/...</p>
+    </div>
+
+    <div id="preview-container">
+      <iframe id="file-preview"></iframe>
+    </div>
+
+    <div
+      id="link-container"
+      style="display: none; margin-top: 10px; margin-bottom: 20px"
+    >
+      <a href="#" id="file-link" target="_blank"></a>
+    </div>
+
+    <div id="OpenAI-prompt-container">
+      <h1>Analyser les items sélectionnés (textes et images du Google doc)</h1>
+      <label for="OpenAI-prompt">Enter prompt for OpenAI:</label>
+      <br />
+      <textarea type="text" id="OpenAI-prompt" rows="20" cols="200"></textarea>
+      <button id="send-prompt-OpenAI">Send Prompt</button>
+      <h2>Response from OpenAI</h2>
+      <div id="response-OpenAI-container"></div>
+    </div>
+
+    <button id="parse-file" style="display: none; margin-top: 10px">
+      (Ré)convertir le Google doc en html
+    </button>
+    <div id="parse-result"></div>
+
+    <!-- Pour la transformation de la réponse OpenAI en markdown en HTML.-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+
+    <script defer src="fonctions.js"></script>
+
+    <!-- Pour pouvoir utiliser la bibliothèque....donnée sous forme de module javascript-->
+    <script>
+      window.onload = async function () {
+        try {
+          await loadGoogleIdentityServicesScript();
+        } catch (error) {
+          console.error(
+            "Error loading Google Identity Services script:",
+            error
+          );
+          return; // Arrêter l'exécution si le script ne peut pas être chargé
+        }
+
+        try {
+          await initializeGoogleApis();
+        } catch (error) {
+          console.error("Error initializing Google APIs:", error);
+          return; // Arrêter l'exécution si les APIs ne peuvent pas être initialisées
+        }
+
+        var fileId = sessionStorage.getItem("fileId");
+        console.log("File ID from session storage: " + fileId);
+
+        if (fileId) {
+          document.getElementById(
+            "doc-url"
+          ).value = `https://docs.google.com/document/d/${fileId}/edit`;
+
+          showFilePreview(fileId);
+        }
+
+        // Afficher le bouton "(Re)convertir le Google doc"
+        document.getElementById("parse-file").style.display = "block";
+      };
+
+      document
+        .getElementById("client-id")
+        .addEventListener("blur", function () {
+          saveSettings();
+        });
+
+      document
+        .getElementById("Google-api-key")
+        .addEventListener("blur", function () {
+          saveSettings();
+        });
+
+      document
+        .getElementById("OpenAI-api-key")
+        .addEventListener("blur", function () {
+          saveSettings();
+        });
+
+      document
+        .getElementById("login-button")
+        .addEventListener("click", async function () {
+          await requestAccessToken();
+        });
+
+      document
+        .getElementById("pick-file")
+        .addEventListener("click", function () {
+          loadPicker();
+        });
+
+      // Sauvegarder le contenu du textarea à chaque changement
+      document
+        .getElementById("OpenAI-prompt")
+        .addEventListener("input", savePromptContent);
+
+      // Ajouter un écouteur d'événement au bouton "(Re)convertir le Google doc"
+      document
+        .getElementById("parse-file")
+        .addEventListener("click", async () => {
+          const fileId = sessionStorage.getItem("fileId");
+          console.log("Parsing Google doc with fileId:", fileId);
+          document.getElementById("parse-result").innerHTML = "";
+          parsedContent = await parseGoogleDoc(fileId);
+          displayParsedContent(parsedContent);
+        });
+
+      document
+        .getElementById("send-prompt-OpenAI")
+        .addEventListener("click", sendPromptOpenAI);
+
+      function displayParsedContent(content) {
+        console.log("display parsed content");
+      }
+
+      function restorePromptContent() {
+        const promptContent = sessionStorage.getItem("OpenAIPromptContent");
+        if (promptContent) {
+          document.getElementById("OpenAI-prompt").value = promptContent;
+        }
+      }
+      function savePromptContent() {
+        const promptContent = document.getElementById("OpenAI-prompt").value;
+        sessionStorage.setItem("OpenAIPromptContent", promptContent);
+      }
+      async function sendPromptOpenAI() {
+        const selectedItems = Array.from(
+          document.querySelectorAll(
+            '#parse-result input[type="checkbox"]:checked'
+          )
+        );
+
+        const items = selectedItems.map((checkbox) => {
+          const index = checkbox.getAttribute("data-index");
+          return parsedContent[index];
+        });
+
+        var prompt = document.getElementById("OpenAI-prompt").value;
+        var response = (document.getElementById(
+          "response-OpenAI-container"
+        ).innerHTML = "");
+
+        await sendOpenAI(prompt, items);
+      }
+
+      function saveSettings() {
+        clientId = document.getElementById("client-id").value;
+        Google_apikey = document.getElementById("Google-api-key").value;
+        OpenAI_apikey = document.getElementById("OpenAI-api-key").value;
+        if (!clientId || !Google_apikey) {
+          document.getElementById("warning-message").style.display = "block";
+          return;
+        }
+        localStorage.setItem("client_id", clientId);
+        localStorage.setItem("Google-apikey", Google_apikey);
+        localStorage.setItem("OpenAI-apikey", OpenAI_apikey);
+        console.log("openai api key saved:", OpenAI_apikey);
+
+        document.getElementById("warning-message").style.display = "none";
+      }
+    </script>
+  </body>
+</html>

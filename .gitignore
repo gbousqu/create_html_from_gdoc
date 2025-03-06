@@ -1,0 +1,5 @@
+# Fichier de log
+error.log
+
+# Tous les sous-dossiers de output, mais pas le dossier output lui-même
+output/*/

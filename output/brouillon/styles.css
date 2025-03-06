@@ -1,0 +1,423 @@
+/* Styles de base */
+body {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  height: 100vh;
+  flex-direction: row; /* Valeur par défaut pour desktop */
+}
+
+/* Ajustements responsifs pour les appareils mobiles et tablettes */
+@media screen and (max-width: 768px) {
+  body {
+    flex-direction: column; /* Change la disposition sur mobile */
+    height: auto;
+  }
+
+  .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 300px;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .content {
+    width: 100%;
+    margin-left: 0;
+    padding: 15px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-left: 0 !important; /* Réinitialiser les marges gauches pour les titres sur mobile */
+  }
+
+  h1 {
+    font-size: 1.6em;
+  }
+
+  h2 {
+    font-size: 1.4em;
+  }
+
+  h3 {
+    font-size: 1.2em;
+  }
+
+  /* Meilleur rendu pour les tableaux sur petits écrans */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Images responsives */
+  .inline-image {
+    max-width: 100%;
+    height: auto !important; /* Remplace toute hauteur fixe */
+  }
+
+  /* Améliorer l'affichage des liens Drive sur mobile */
+  .drive-file-link {
+    flex-wrap: wrap;
+  }
+
+  .drive-file-icon {
+    margin-bottom: 5px;
+  }
+}
+
+/* Ajout d'un bouton menu pour les appareils mobiles */
+.menu-toggle {
+  display: none; /* Caché par défaut sur desktop */
+}
+
+@media screen and (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+    background: #4285f4;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    font-weight: bold;
+  }
+
+  .nav-menu {
+    display: none; /* Menu caché par défaut sur mobile */
+  }
+
+  .sidebar.expanded .nav-menu {
+    display: block; /* Menu affiché quand expanded */
+  }
+}
+/* Style spécifique pour les titres d'onglet */
+h1.tab_title {
+  font-size: 1.7em;
+  background-color: #e8eaf6; /* Bleu indigo très pâle */
+  border-left: 4px solid #3f51b5;
+  padding: 0.7em 1em 0.7em 15px;
+  margin-top: 0.8em;
+  margin-bottom: 1.2em;
+  font-weight: 500;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  border-radius: 5px;
+  color: #283593; /* Bleu indigo foncé */
+  position: relative;
+}
+
+/* Petit effet décoratif pour le titre d'onglet */
+h1.tab_title::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 15px;
+  width: 60%;
+  height: 3px;
+  background: linear-gradient(
+    to right,
+    rgba(63, 81, 181, 0.4),
+    rgba(63, 81, 181, 0)
+  );
+}
+
+/* Animation subtile au chargement de l'onglet */
+.tab-content.active h1.tab_title {
+  animation: fadeInLeft 0.5s ease-out;
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 400; /* Police moins grasse */
+  margin-top: 1.5em;
+  margin-bottom: 0.8em;
+  line-height: 1.3;
+  /* padding: 0.6em 0.8em; */
+  border-radius: 5px;
+  color: #444;
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+  padding-left: 15px;
+}
+
+/* Ajuster les tailles relatives pour les titres */
+h1 {
+  font-size: 1.8em; /* Plus petit que la taille par défaut */
+  background-color: #c2d7e7; /* Bleu très pâle */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+h2 {
+  font-size: 1.5em;
+  background-color: #dfedf3; /* Jaune très pâle */
+  margin-left: 20px;
+}
+
+h3 {
+  font-size: 1.3em;
+  background-color: #edf4f7; /* Jaune très pâle */
+  margin-left: 25px;
+}
+
+h4,
+h5,
+h6 {
+  font-size: 1.1em;
+}
+
+/* Ajuster la taille des textes dans la barre latérale */
+.sidebar {
+  font-size: 0.95em; /* Légèrement plus petit que le reste du contenu */
+  width: 300px;
+  background-color: #f5f5f5;
+  padding: 10px;
+  overflow-y: auto;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  height: 100vh;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Styles pour la navigation */
+.nav-menu ul {
+  list-style-type: none;
+  padding-left: 15px;
+}
+
+.nav-menu > ul {
+  padding-left: 0;
+}
+
+.nav-item {
+  margin-bottom: 8px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #333;
+  display: block;
+  padding: 5px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.nav-link:hover {
+  background-color: #e0e0e0;
+}
+
+.nav-link.active {
+  background-color: #4285f4;
+  color: white;
+}
+
+/* Style pour le contenu des onglets */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Styles pour les tableaux */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+th,
+td {
+  padding: 8px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+/* Styles pour les images */
+.inline-image {
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+}
+
+/* Styles pour les liens Google Drive */
+.drive-file-link {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin: 10px 0;
+  text-decoration: none;
+  color: #333;
+  background-color: #f9f9f9;
+  transition: background-color 0.2s;
+}
+
+.drive-file-link:hover {
+  background-color: #f0f0f0;
+}
+
+.drive-file-icon {
+  margin-right: 15px;
+}
+
+.drive-file-title {
+  font-weight: bold;
+  display: block;
+  color: #4285f4;
+}
+
+.drive-file-desc {
+  display: block;
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 3px;
+}
+
+/* --------- STYLES POUR LES LISTES - SECTION RÉVISÉE --------- */
+
+/* Styles de base pour toutes les listes */
+ul,
+ol {
+  padding-left: 25px; /* Espacement standard pour les listes */
+  margin: 10px 0;
+}
+
+/* Styles spécifiques pour chaque type de liste */
+
+/* Listes non ordonnées (puces) */
+ul {
+  list-style-type: disc; /* Style de puce par défaut */
+}
+
+/* Premier niveau de liste ordonnée */
+ol {
+  list-style-type: decimal; /* Nombres par défaut: 1, 2, 3 */
+}
+
+/* Styles spécifiques pour les différents types de listes ordonnées */
+ol.upper-alpha {
+  list-style-type: upper-alpha !important; /* A, B, C */
+}
+
+ol.lower-alpha {
+  list-style-type: lower-alpha !important; /* a, b, c */
+}
+
+ol.upper-roman {
+  list-style-type: upper-roman !important; /* I, II, III */
+}
+
+ol.lower-roman {
+  list-style-type: lower-roman !important; /* i, ii, iii */
+}
+
+/* Styles pour les puces aux différents niveaux d'imbrication */
+ul ul {
+  list-style-type: circle; /* Deuxième niveau: cercle vide */
+}
+
+ul ul ul {
+  list-style-type: square; /* Troisième niveau: carré */
+}
+
+/* Forcer le type de liste pour les listes imbriquées */
+li > ol.upper-alpha,
+ol ol.upper-alpha {
+  list-style-type: upper-alpha !important;
+}
+
+li > ol.lower-alpha,
+ol ol.lower-alpha {
+  list-style-type: lower-alpha !important;
+}
+
+li > ol.upper-roman,
+ol ol.upper-roman {
+  list-style-type: upper-roman !important;
+}
+
+li > ol.lower-roman,
+ol ol.lower-roman {
+  list-style-type: lower-roman !important;
+}
+
+/* Espacement vertical entre les éléments de liste */
+li {
+  margin-bottom: 5px; /* Espacement entre les éléments */
+}
+
+li:last-child {
+  margin-bottom: 0; /* Supprimer la marge du dernier élément */
+}
+
+/* Pour les listes imbriquées dans un élément de liste */
+li > ul,
+li > ol {
+  margin-top: 5px; /* Espacement avant une liste imbriquée */
+  margin-bottom: 8px; /* Espacement après une liste imbriquée */
+}
+
+/* Annuler le margin-bottom sur le dernier niveau imbriqué */
+li:last-child > ul:last-child,
+li:last-child > ol:last-child {
+  margin-bottom: 0;
+}
+
+/* Styles spécifiques pour les listes creuses et carrées */
+ul.hollow {
+  list-style-type: circle !important;
+}
+
+ul.square {
+  list-style-type: square !important;
+}
+
+/* Assurer la visibilité des marques de liste ordonnées */
+ol {
+  padding-left: 30px; /* Légèrement plus d'espace pour les numéros */
+}
+
+/* Correction pour les navigateurs qui peuvent avoir des styles par défaut conflictuels */
+ol.upper-alpha,
+ol.lower-alpha,
+ol.upper-roman,
+ol.lower-roman {
+  padding-left: 30px !important;
+}
