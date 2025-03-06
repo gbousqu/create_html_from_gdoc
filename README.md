@@ -1,12 +1,24 @@
 # Create HTML page from gdoc
 
-A web application that converts Google Docs documents into standalone HTML websites with proper styling, navigation, and embedded content.
+A web application that converts Google Docs documents with tabs and nested tabs into responsive HTML websites with an interactive navigation system. The document's tab structure is transformed into a sidebar menu on desktop or a dropdown menu on mobile, allowing easy navigation between sections.
 
 ## Features
 
+- **Smart Tab Navigation**: Converts Google Docs tabs and sub-tabs into an intuitive navigation system:
+
+  - Sidebar navigation on desktop devices
+  - Collapsible top menu on mobile devices
+  - Preserves parent-child relationships between tabs
+  - One-click navigation between document sections
+
+- **Complete Tab Hierarchy Support**:
+
+  - Preserves multi-level tab structures (main tabs, sub-tabs, etc.)
+  - Maintains tab titles and content organization
+  - Automatically generates navigation breadcrumbs for deep nesting
+
 - **Google Docs Integration**: Authenticate with Google APIs and access your documents directly
-- **Document Selection**: Choose documents via URL or integrated Google Picker
-- **Multi-tab Support**: Preserves the tab structure from Google Docs
+  - Document Selection: Choose documents via URL or integrated Google Picker
 - **Rich Content Conversion**:
   - Headings, paragraphs, and text formatting
   - Lists (ordered and unordered) with proper nesting
@@ -14,7 +26,10 @@ A web application that converts Google Docs documents into standalone HTML websi
   - Images with original dimensions
   - Richlinks to Google Drive files with appropriate icons
 - **Auto Table of Contents**: Automatically generates navigation from document headings
-- **Responsive Design**: Mobile-friendly output with responsive navigation
+
+- **Responsive Design**:
+  - Mobile-friendly output with adaptive navigation
+  - Tab navigation transforms based on screen size
 - **Asset Management**: Saves and optimizes images from the document
 
 ## Requirements
@@ -42,6 +57,7 @@ A web application that converts Google Docs documents into standalone HTML websi
 4. Enter a Google Doc URL or use the picker to select a document
 5. Click "Generate HTML Site" to process the document
 6. The generated site will open in a new tab and can be found in the `output` directory
+7. Navigate through the document sections using the generated tab menu
 
 ## File Structure
 
@@ -59,21 +75,24 @@ A web application that converts Google Docs documents into standalone HTML websi
 
 1. The application authenticates with Google APIs using OAuth 2.0
 2. It fetches the selected document's content via the Google Docs API
-3. The document structure is parsed, including headings, lists, tables, and embedded objects
-4. Images and other embedded content are downloaded and converted for local use
-5. A responsive HTML site is generated with CSS styling
-6. The site files are saved to the output directory with a folder name based on the document title
+3. The document's tab structure is analyzed and converted to a navigation hierarchy
+4. The document structure is parsed, including headings, lists, tables, and embedded objects
+5. Images and other embedded content are downloaded and converted for local use
+6. A responsive HTML site is generated with CSS styling and JavaScript for tab navigation
+7. The site files are saved to the output directory with a folder name based on the document title
 
 ## Customization
 
 - Edit the generated `styles.css` file in the output directory to change site appearance
 - Modify the template in the `generateSiteHtml` function to change the site structure
+- Adjust tab navigation behavior by editing the JavaScript in the HTML template
 
 ## Troubleshooting
 
 - **Authentication Issues**: Ensure your Google API credentials are correct and have the necessary permissions
 - **Image Loading Problems**: Check that the proxy script can access Google's servers
 - **Write Permission Errors**: Verify that the web server has write permissions to the output directory
+- **Tab Navigation Issues**: Make sure your Google Doc uses proper tab structures for best results
 
 ## License
 
