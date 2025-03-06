@@ -1,4 +1,4 @@
-# Google Docs to HTML Site Generator
+# Create HTML page from gdoc
 
 A web application that converts Google Docs documents into standalone HTML websites with proper styling, navigation, and embedded content.
 
