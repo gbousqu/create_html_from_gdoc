@@ -25,7 +25,7 @@ A web application that converts Google Docs documents with tabs and nested tabs 
   </div>
   
   <div style="flex: 1; min-width: 300px; background-color: #fef9e6; padding: 15px; border-radius: 8px; border: 1px solid #feefc3;">
-    <h3 style="color: #f4b400;">🔌 Google Docs Integration</h3>
+    <h3 style="color: #f4b400;">🗄️ Google Drive Integration</h3>
     <ul>
       <li>Authenticate with Google APIs</li>
       <li>Access your documents directly</li>
@@ -136,44 +136,45 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 
 ## ⚙️ How It Works
 
-<div style="display: flex; flex-direction: column; gap: 10px; margin: 20px 0;">
-  <div style="display: flex; align-items: center; gap: 15px;">
-    <div style="background-color: #4285f4; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">1</div>
+<div style="margin: 20px 0;">
+  <div style="display: flex; align-items: center; padding: 8px 0;">
+    <div style="background-color: #4285f4; color: white; min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;">1</div>
     <div>The application authenticates with Google APIs using OAuth 2.0</div>
   </div>
-  <div style="display: flex; align-items: center; gap: 15px;">
-    <div style="background-color: #34a853; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
+  
+  <div style="display: flex; align-items: center; padding: 8px 0;">
+    <div style="background-color: #34a853; color: white; min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;">2</div>
     <div>It fetches the selected document's content via the Google Docs API</div>
   </div>
-  <div style="display: flex; align-items: center; gap: 15px;">
-    <div style="background-color: #fbbc05; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">3</div>
+  
+  <div style="display: flex; align-items: center; padding: 8px 0;">
+    <div style="background-color: #fbbc05; color: white; min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;">3</div>
     <div>The document's tab structure is analyzed and converted to a navigation hierarchy</div>
   </div>
-  <div style="display: flex; align-items: center; gap: 15px;">
-    <div style="background-color: #ea4335; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">4</div>
+  
+  <div style="display: flex; align-items: center; padding: 8px 0;">
+    <div style="background-color: #ea4335; color: white; min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;">4</div>
     <div>The document structure is parsed, including headings, lists, tables, and embedded objects</div>
   </div>
-  <div style="display: flex; align-items: center; gap: 15px;">
-    <div style="background-color: #673ab7; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">5</div>
+  
+  <div style="display: flex; align-items: center; padding: 8px 0;">
+    <div style="background-color: #673ab7; color: white; min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;">5</div>
     <div>Images and other embedded content are downloaded and converted for local use</div>
   </div>
-  <div style="display: flex; align-items: center; gap: 15px;">
-    <div style="background-color: #0f9d58; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">6</div>
+  
+  <div style="display: flex; align-items: center; padding: 8px 0;">
+    <div style="background-color: #0f9d58; color: white; min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;">6</div>
     <div>A responsive HTML site is generated with CSS styling and JavaScript for tab navigation</div>
   </div>
-  <div style="display: flex; align-items: center; gap: 15px;">
-    <div style="background-color: #795548; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">7</div>
+  
+  <div style="display: flex; align-items: center; padding: 8px 0;">
+    <div style="background-color: #795548; color: white; min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;">7</div>
     <div>The site files are saved to the output directory with a folder name based on the document title</div>
   </div>
 </div>
 
 ## 🎨 Customization
 
-<div style="background-color: #e8eaed; padding: 15px; border-radius: 8px; margin: 20px 0;">
-  <h4 style="margin-top: 0;">Style Customization</h4>
-  <p>Edit the generated <code>styles.css</code> file in the output directory to change site appearance</p>
-  
-  <h4>Behavior Customization</h4>
   <p>Adjust tab navigation behavior by editing the JavaScript in the HTML template</p>
 </div>
 
