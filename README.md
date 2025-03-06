@@ -24,8 +24,10 @@ A web application that converts Google Docs documents with tabs and nested tabs 
     </ul>
   </div>
   
-  <div style="flex: 1; min-width: 300px; background-color: #fef9e6; padding: 15px; border-radius: 8px; border: 1px solid #feefc3;">
-    <h3 style="color: #f4b400;">🗄️ Google Drive Integration</h3>
+<div style="flex: 1; min-width: 300px; background-color: #fef9e6; padding: 15px; border-radius: 8px; border: 1px solid #feefc3;">
+  <h3 style="color: #f4b400;">
+    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgODggODgiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PHBhdGggZD0ibTI5LjQgNDIuOSAxMC4xLTE3LjYgMTAuMiAxNy42eiIgZmlsbD0iI2ZmY2EyOCIvPjxwYXRoIGQ9Im01ODIuOSA1MTIuMS0xMC4yIDE3LjctMjAuNCAwIDEwLjItMTcuN3oiIGZpbGw9IiMyNGI1N2UiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC01MTMuMyAtNDY5LjIpIi8+PHBhdGggZD0ibTU3Mi43IDUyOS44LTEwLjItMTcuNyAyMC40IDAgMTAuMiAxNy43eiIgZmlsbD0iIzIxOTZmMyIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTUxMy4zIC00NjkuMikiLz48L3N2Zz4=" width="24" height="24" style="vertical-align: middle; margin-right: 5px;"> Google Drive Integration
+  </h3>
     <ul>
       <li>Authenticate with Google APIs</li>
       <li>Access your documents directly</li>
