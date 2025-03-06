@@ -11,21 +11,16 @@ A web application that converts Google Docs documents with tabs and nested tabs 
   - Preserves parent-child relationships between tabs
   - One-click navigation between document sections
 
-- **Complete Tab Hierarchy Support**:
-
-  - Preserves multi-level tab structures (main tabs, sub-tabs, etc.)
-  - Maintains tab titles and content organization
-  - Automatically generates navigation breadcrumbs for deep nesting
-
 - **Google Docs Integration**: Authenticate with Google APIs and access your documents directly
   - Document Selection: Choose documents via URL or integrated Google Picker
 - **Rich Content Conversion**:
+
   - Headings, paragraphs, and text formatting
   - Lists (ordered and unordered) with proper nesting
   - Tables with formatting
   - Images with original dimensions
   - Richlinks to Google Drive files with appropriate icons
-- **Auto Table of Contents**: Automatically generates navigation from document headings
+  - Table of contents
 
 - **Responsive Design**:
   - Mobile-friendly output with adaptive navigation
@@ -84,7 +79,6 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 ## Customization
 
 - Edit the generated `styles.css` file in the output directory to change site appearance
-- Modify the template in the `generateSiteHtml` function to change the site structure
 - Adjust tab navigation behavior by editing the JavaScript in the HTML template
 
 ## Troubleshooting
@@ -92,11 +86,10 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 - **Authentication Issues**: Ensure your Google API credentials are correct and have the necessary permissions
 - **Image Loading Problems**: Check that the proxy script can access Google's servers
 - **Write Permission Errors**: Verify that the web server has write permissions to the output directory
-- **Tab Navigation Issues**: Make sure your Google Doc uses proper tab structures for best results
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Credits
 
