@@ -5,8 +5,52 @@
     <title>Convert Google Doc with Tabs to HTML Site</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
-        font-size: 0.8em;
+        font-family: "Roboto", sans-serif;
+        font-size: 0.9em;
+        background-color: #f5f5f5;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+      h1,
+      h3 {
+        color: #4285f4;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input[type="text"],
+      input[type="url"] {
+        width: calc(100% - 20px);
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-top: 10px;
+        background-color: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1em;
+      }
+      button:hover {
+        background-color: #357ae8;
       }
       #file-preview {
         transform: scale(0.75);
@@ -30,36 +74,30 @@
         margin: 0;
         padding: 0;
       }
-
       #parse-result {
         margin-top: 10px;
         min-height: 100px;
       }
-
       #parse-result table {
         border-collapse: collapse;
         width: 100%;
       }
-
       #parse-result th,
       #parse-result td {
         border: none;
         padding: 2px;
         text-align: left;
       }
-
       /* Style for the first row of the table */
       #parse-result table tr:first-child th {
         background-color: #d3d3d3; /* Different background color */
         color: #000; /* Different text color */
         font-weight: bold; /* Bold text */
       }
-
       /* Style for other rows of the table */
       #parse-result table tr:not(:first-child) td {
         border-bottom: 1px solid #d3d3d3;
       }
-
       /* Style for rows with a different style than NORMAL_TEXT */
       .highlight-row {
         background-color: #afaeb3; /* Different background color */
@@ -68,7 +106,6 @@
       #stylesXmlInput {
         display: none;
       }
-
       .custom-file-upload {
         display: inline-block;
         padding: 6px 12px;
@@ -85,75 +122,58 @@
     </style>
   </head>
   <body>
-    <label for="client-id">Client ID:</label>
-    <input type="text" id="client-id" />
-    <br />
-    <label for="Google-api-key">Google API Key:</label>
-    <input type="text" id="Google-api-key" />
-    <br />
-    <!-- <label for="OpenAI-api-key">OpenAI API Key:</label>
-    <input type="text" id="OpenAI-api-key" />
-    <br /> -->
-    <div id="warning-message">Client ID and API Key are required.</div>
-    <br />
-
-    <h1>Select a Google Doc to Convert to HTML (it can contain tabs)</h1>
-    <h3>Use Google Drive File Picker</h3>
-
-    <button id="login-button">Login with Google</button>
-    <button
-      id="pick-file"
-      style="display: block; margin-top: 10px; margin-bottom: 10px"
-    >
-      Pick a file from Google Drive
-    </button>
-
-    <div class="url-input-container">
-      <h3>Or Enter a Google Doc URL Directly</h3>
-      <form id="url-form">
-        <input
-          type="url"
-          id="doc-url"
-          placeholder="https://docs.google.com/document/d/DOCUMENT_ID/edit"
-          style="width: 80%; padding: 8px; margin-right: 10px"
-        />
-        <button type="submit" class="btn">Load Document</button>
-      </form>
-      <p class="hint">
-        Accepted format: https://docs.google.com/document/d/...
-      </p>
+    <div class="container">
+      <label for="client-id">Client ID:</label>
+      <input type="text" id="client-id" />
+      <label for="Google-api-key">Google API Key:</label>
+      <input type="text" id="Google-api-key" />
+      <!-- <label for="OpenAI-api-key">OpenAI API Key:</label>
+      <input type="text" id="OpenAI-api-key" /> -->
+      <div id="warning-message">Client ID and API Key are required.</div>
+      <button id="login-button">Login with Google</button>
+      <button id="pick-file">Pick a file from Google Drive</button>
+      <h1>Select a Google Doc to Convert to HTML (it can contain tabs)</h1>
+      <h3>Use Google Drive File Picker</h3>
+      <div class="url-input-container">
+        <h3>Or Enter a Google Doc URL Directly</h3>
+        <form id="url-form">
+          <input
+            type="url"
+            id="doc-url"
+            placeholder="https://docs.google.com/document/d/DOCUMENT_ID/edit"
+            style="width: 60%; padding: 8px; margin-right: 10px"
+          />
+          <button type="submit" class="btn">Load Document</button>
+        </form>
+        <p class="hint">
+          Accepted format: https://docs.google.com/document/d/...
+        </p>
+      </div>
+      <div id="preview-container">
+        <iframe id="file-preview"></iframe>
+      </div>
+      <div
+        id="link-container"
+        style="display: none; margin-top: 10px; margin-bottom: 20px"
+      >
+        <a href="#" id="file-link" target="_blank"></a>
+      </div>
+      <!-- <div id="OpenAI-prompt-container">
+        <h1>Analyze Selected Items (Texts and Images from Google Doc)</h1>
+        <label for="OpenAI-prompt">Enter prompt for OpenAI:</label>
+        <br />
+        <textarea type="text" id="OpenAI-prompt" rows="20" cols="200"></textarea>
+        <button id="send-prompt-OpenAI">Send Prompt</button>
+        <h2>Response from OpenAI</h2>
+        <div id="response-OpenAI-container"></div>
+      </div> -->
+      <button id="parse-file" style="display: none; margin-top: 10px">
+        (Re)convert Google Doc to HTML
+      </button>
+      <div id="parse-result"></div>
     </div>
-
-    <div id="preview-container">
-      <iframe id="file-preview"></iframe>
-    </div>
-
-    <div
-      id="link-container"
-      style="display: none; margin-top: 10px; margin-bottom: 20px"
-    >
-      <a href="#" id="file-link" target="_blank"></a>
-    </div>
-
-    <!-- <div id="OpenAI-prompt-container">
-      <h1>Analyze Selected Items (Texts and Images from Google Doc)</h1>
-      <label for="OpenAI-prompt">Enter prompt for OpenAI:</label>
-      <br />
-      <textarea type="text" id="OpenAI-prompt" rows="20" cols="200"></textarea>
-      <button id="send-prompt-OpenAI">Send Prompt</button>
-      <h2>Response from OpenAI</h2>
-      <div id="response-OpenAI-container"></div>
-    </div> -->
-
-    <button id="parse-file" style="display: none; margin-top: 10px">
-      (Re)convert Google Doc to HTML
-    </button>
-    <div id="parse-result"></div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
-
     <script defer src="fonctions.js"></script>
-
     <script>
       window.onload = async function () {
         try {
@@ -165,64 +185,52 @@
           );
           return; // Stop execution if the script cannot be loaded
         }
-
         try {
           await initializeGoogleApis();
         } catch (error) {
           console.error("Error initializing Google APIs:", error);
           return; // Stop execution if the APIs cannot be initialized
         }
-
         var fileId = sessionStorage.getItem("fileId");
         console.log("File ID from session storage: " + fileId);
-
         if (fileId) {
           document.getElementById(
             "doc-url"
           ).value = `https://docs.google.com/document/d/${fileId}/edit`;
-
           showFilePreview(fileId);
         }
-
         // Display the "(Re)convert Google Doc" button
         document.getElementById("parse-file").style.display = "block";
       };
-
       document
         .getElementById("client-id")
         .addEventListener("blur", function () {
           saveSettings();
         });
-
       document
         .getElementById("Google-api-key")
         .addEventListener("blur", function () {
           saveSettings();
         });
-
       document
         .getElementById("OpenAI-api-key")
         .addEventListener("blur", function () {
           saveSettings();
         });
-
       document
         .getElementById("login-button")
         .addEventListener("click", async function () {
           await requestAccessToken();
         });
-
       document
         .getElementById("pick-file")
         .addEventListener("click", function () {
           loadPicker();
         });
-
       // Save the content of the textarea on each change
       document
         .getElementById("OpenAI-prompt")
         .addEventListener("input", savePromptContent);
-
       // Add an event listener to the "(Re)convert Google Doc" button
       document
         .getElementById("parse-file")
@@ -233,15 +241,12 @@
           parsedContent = await parseGoogleDoc(fileId);
           displayParsedContent(parsedContent);
         });
-
       document
         .getElementById("send-prompt-OpenAI")
         .addEventListener("click", sendPromptOpenAI);
-
       function displayParsedContent(content) {
         console.log("display parsed content");
       }
-
       function restorePromptContent() {
         const promptContent = sessionStorage.getItem("OpenAIPromptContent");
         if (promptContent) {
@@ -258,20 +263,16 @@
             '#parse-result input[type="checkbox"]:checked'
           )
         );
-
         const items = selectedItems.map((checkbox) => {
           const index = checkbox.getAttribute("data-index");
           return parsedContent[index];
         });
-
         var prompt = document.getElementById("OpenAI-prompt").value;
         var response = (document.getElementById(
           "response-OpenAI-container"
         ).innerHTML = "");
-
         await sendOpenAI(prompt, items);
       }
-
       function saveSettings() {
         clientId = document.getElementById("client-id").value;
         Google_apikey = document.getElementById("Google-api-key").value;
@@ -284,7 +285,6 @@
         localStorage.setItem("Google-apikey", Google_apikey);
         localStorage.setItem("OpenAI-apikey", OpenAI_apikey);
         console.log("openai api key saved:", OpenAI_apikey);
-
         document.getElementById("warning-message").style.display = "none";
       }
     </script>
