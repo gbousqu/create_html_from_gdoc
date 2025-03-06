@@ -12,7 +12,7 @@ A web application that converts Google Docs documents into standalone HTML websi
   - Lists (ordered and unordered) with proper nesting
   - Tables with formatting
   - Images with original dimensions
-  - Links to Google Drive files with appropriate icons
+  - Richlinks to Google Drive files with appropriate icons
 - **Auto Table of Contents**: Automatically generates navigation from document headings
 - **Responsive Design**: Mobile-friendly output with responsive navigation
 - **Asset Management**: Saves and optimizes images from the document
