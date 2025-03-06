@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>conversion d'un Google Doc à onglets en un site HTML</title>
+    <title>Convert Google Doc with Tabs to HTML Site</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -48,21 +48,21 @@
         text-align: left;
       }
 
-      /* Style pour la première ligne du tableau */
+      /* Style for the first row of the table */
       #parse-result table tr:first-child th {
-        background-color: #d3d3d3; /* Couleur de fond différente */
-        color: #000; /* Couleur du texte différente */
-        font-weight: bold; /* Texte en gras */
+        background-color: #d3d3d3; /* Different background color */
+        color: #000; /* Different text color */
+        font-weight: bold; /* Bold text */
       }
 
-      /* Style pour les autres lignes du tableau */
+      /* Style for other rows of the table */
       #parse-result table tr:not(:first-child) td {
         border-bottom: 1px solid #d3d3d3;
       }
 
-      /* Style pour les lignes avec un style différent de NORMAL_TEXT */
+      /* Style for rows with a different style than NORMAL_TEXT */
       .highlight-row {
-        background-color: #afaeb3; /* Couleur de fond différente */
+        background-color: #afaeb3; /* Different background color */
       }
       #documentXmlInput,
       #stylesXmlInput {
@@ -91,14 +91,14 @@
     <label for="Google-api-key">Google API Key:</label>
     <input type="text" id="Google-api-key" />
     <br />
-    <label for="OpenAI-api-key">OpenAI API Key:</label>
+    <!-- <label for="OpenAI-api-key">OpenAI API Key:</label>
     <input type="text" id="OpenAI-api-key" />
-    <br />
+    <br /> -->
     <div id="warning-message">Client ID and API Key are required.</div>
     <br />
 
-    <h1>Choisir un gdoc à convertir en html (il peut contenir des onglets)</h1>
-    <h3>Utiliser un sélecteur de fichier de Google Drive</h3>
+    <h1>Select a Google Doc to Convert to HTML (it can contain tabs)</h1>
+    <h3>Use Google Drive File Picker</h3>
 
     <button id="login-button">Login with Google</button>
     <button
@@ -108,9 +108,8 @@
       Pick a file from Google Drive
     </button>
 
-    <!-- Ajoutez ce code HTML à votre page principale -->
     <div class="url-input-container">
-      <h3>Ou entrer directement une URL Google Doc</h3>
+      <h3>Or Enter a Google Doc URL Directly</h3>
       <form id="url-form">
         <input
           type="url"
@@ -118,9 +117,11 @@
           placeholder="https://docs.google.com/document/d/DOCUMENT_ID/edit"
           style="width: 80%; padding: 8px; margin-right: 10px"
         />
-        <button type="submit" class="btn">Charger ce document</button>
+        <button type="submit" class="btn">Load Document</button>
       </form>
-      <p class="hint">Format accepté: https://docs.google.com/document/d/...</p>
+      <p class="hint">
+        Accepted format: https://docs.google.com/document/d/...
+      </p>
     </div>
 
     <div id="preview-container">
@@ -134,27 +135,25 @@
       <a href="#" id="file-link" target="_blank"></a>
     </div>
 
-    <div id="OpenAI-prompt-container">
-      <h1>Analyser les items sélectionnés (textes et images du Google doc)</h1>
+    <!-- <div id="OpenAI-prompt-container">
+      <h1>Analyze Selected Items (Texts and Images from Google Doc)</h1>
       <label for="OpenAI-prompt">Enter prompt for OpenAI:</label>
       <br />
       <textarea type="text" id="OpenAI-prompt" rows="20" cols="200"></textarea>
       <button id="send-prompt-OpenAI">Send Prompt</button>
       <h2>Response from OpenAI</h2>
       <div id="response-OpenAI-container"></div>
-    </div>
+    </div> -->
 
     <button id="parse-file" style="display: none; margin-top: 10px">
-      (Ré)convertir le Google doc en html
+      (Re)convert Google Doc to HTML
     </button>
     <div id="parse-result"></div>
 
-    <!-- Pour la transformation de la réponse OpenAI en markdown en HTML.-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
 
     <script defer src="fonctions.js"></script>
 
-    <!-- Pour pouvoir utiliser la bibliothèque....donnée sous forme de module javascript-->
     <script>
       window.onload = async function () {
         try {
@@ -164,14 +163,14 @@
             "Error loading Google Identity Services script:",
             error
           );
-          return; // Arrêter l'exécution si le script ne peut pas être chargé
+          return; // Stop execution if the script cannot be loaded
         }
 
         try {
           await initializeGoogleApis();
         } catch (error) {
           console.error("Error initializing Google APIs:", error);
-          return; // Arrêter l'exécution si les APIs ne peuvent pas être initialisées
+          return; // Stop execution if the APIs cannot be initialized
         }
 
         var fileId = sessionStorage.getItem("fileId");
@@ -185,7 +184,7 @@
           showFilePreview(fileId);
         }
 
-        // Afficher le bouton "(Re)convertir le Google doc"
+        // Display the "(Re)convert Google Doc" button
         document.getElementById("parse-file").style.display = "block";
       };
 
@@ -219,12 +218,12 @@
           loadPicker();
         });
 
-      // Sauvegarder le contenu du textarea à chaque changement
+      // Save the content of the textarea on each change
       document
         .getElementById("OpenAI-prompt")
         .addEventListener("input", savePromptContent);
 
-      // Ajouter un écouteur d'événement au bouton "(Re)convertir le Google doc"
+      // Add an event listener to the "(Re)convert Google Doc" button
       document
         .getElementById("parse-file")
         .addEventListener("click", async () => {
