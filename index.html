@@ -126,15 +126,6 @@
   </head>
   <body>
     <div class="container">
-      <label for="client-id">Client ID:</label>
-      <input type="text" id="client-id" />
-      <label for="Google-api-key">Google API Key:</label>
-      <input type="text" id="Google-api-key" />
-      <!-- <label for="OpenAI-api-key">OpenAI API Key:</label>
-      <input type="text" id="OpenAI-api-key" /> -->
-      <div id="warning-message">Client ID and API Key are required.</div>
-      <button id="login-button">Login with Google</button>
-
       <button id="pick-file">Pick a file from Google Drive</button>
       <div class="url-input-container">
         <h3>Or Enter a Google Doc URL Directly</h3>
@@ -160,15 +151,6 @@
       >
         <a href="#" id="file-link" target="_blank"></a>
       </div>
-      <!-- <div id="OpenAI-prompt-container">
-        <h1>Analyze Selected Items (Texts and Images from Google Doc)</h1>
-        <label for="OpenAI-prompt">Enter prompt for OpenAI:</label>
-        <br />
-        <textarea type="text" id="OpenAI-prompt" rows="20" cols="200"></textarea>
-        <button id="send-prompt-OpenAI">Send Prompt</button>
-        <h2>Response from OpenAI</h2>
-        <div id="response-OpenAI-container"></div>
-      </div> -->
       <button id="parse-file" style="display: none; margin-top: 10px">
         (Re)convert Google Doc to HTML
       </button>
@@ -179,112 +161,222 @@
     <script>
       window.onload = async function () {
         try {
+          // Add loading indicator to the page
+          const loadingIndicator = document.createElement("div");
+          loadingIndicator.id = "loading-indicator";
+          loadingIndicator.innerHTML = `
+          <div class="spinner"></div>
+          <p>Connecting to Google...</p>
+        `;
+          loadingIndicator.style.textAlign = "center";
+          loadingIndicator.style.margin = "20px 0";
+          document.querySelector(".container").prepend(loadingIndicator);
+
+          // Create spinner style
+          const style = document.createElement("style");
+          style.textContent = `
+          .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #4285f4;
+            animation: spin 1s linear infinite;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `;
+          document.head.appendChild(style);
+
+          // Load API configuration from server
+          await loadApiConfig();
+
+          // Load Google Identity Services script
           await loadGoogleIdentityServicesScript();
+
+          // Check if user already has a valid token
+          const accessToken = sessionStorage.getItem("accessToken");
+          if (accessToken) {
+            // Verify if the token is still valid
+            const isValid = await checkAccessToken(accessToken);
+            if (!isValid) {
+              console.log("Access token is invalid, requesting a new one...");
+              await requestAccessToken();
+            }
+          } else {
+            // If no token exists, request authentication immediately
+            console.log("No access token found, requesting a new one...");
+            try {
+              await requestAccessToken();
+              console.log("Access token obtained successfully:", accessToken);
+            } catch (error) {
+              console.error("Failed to obtain access token:", error);
+            }
+          }
+
+          // Initialize Google API Client
+          await initializeGoogleApiClient();
+
+          // Make file picker button visible
+          document.getElementById("pick-file").style.display = "block";
+
+          // Check if there's a stored fileId
+          var fileId = sessionStorage.getItem("fileId");
+          console.log("File ID from session storage: " + fileId);
+          if (fileId) {
+            try {
+              document.getElementById(
+                "doc-url"
+              ).value = `https://docs.google.com/document/d/${fileId}/edit`;
+
+              // Try to load the file preview, but handle potential errors
+              await showFilePreview(fileId).catch((error) => {
+                console.error("Error loading file preview:", error);
+                // If the file can't be loaded, clear the stored fileId
+                sessionStorage.removeItem("fileId");
+                document.getElementById("doc-url").value = "";
+
+                // Don't show an alert to avoid confusing the user on page load
+                console.log(
+                  "The previously stored file is no longer accessible. Please select a new file."
+                );
+              });
+            } catch (error) {
+              console.error("Error handling stored fileId:", error);
+              // Clear the stored fileId on error
+              sessionStorage.removeItem("fileId");
+              document.getElementById("doc-url").value = "";
+            }
+          }
+
+          // Display the conversion button
+          document.getElementById("parse-file").style.display = "block";
+
+          // Hide loading indicator when everything is done
+          document.getElementById("loading-indicator").style.display = "none";
         } catch (error) {
-          console.error(
-            "Error loading Google Identity Services script:",
-            error
+          console.error("Error during initialization:", error);
+
+          // Hide loading indicator on error
+          const loadingIndicator = document.getElementById("loading-indicator");
+          if (loadingIndicator) {
+            loadingIndicator.style.display = "none";
+          }
+
+          alert(
+            "An error occurred during initialization. Please try again or contact the administrator."
           );
-          return; // Stop execution if the script cannot be loaded
         }
-        try {
-          await initializeGoogleApis();
-        } catch (error) {
-          console.error("Error initializing Google APIs:", error);
-          return; // Stop execution if the APIs cannot be initialized
-        }
-        var fileId = sessionStorage.getItem("fileId");
-        console.log("File ID from session storage: " + fileId);
-        if (fileId) {
-          document.getElementById(
-            "doc-url"
-          ).value = `https://docs.google.com/document/d/${fileId}/edit`;
-          showFilePreview(fileId);
-        }
-        // Display the "(Re)convert Google Doc" button
-        document.getElementById("parse-file").style.display = "block";
       };
-      document
-        .getElementById("client-id")
-        .addEventListener("blur", function () {
-          saveSettings();
-        });
-      document
-        .getElementById("Google-api-key")
-        .addEventListener("blur", function () {
-          saveSettings();
-        });
-      // document
-      //   .getElementById("OpenAI-api-key")
-      //   .addEventListener("blur", function () {
-      //     saveSettings();
-      //   });
-      document
-        .getElementById("login-button")
-        .addEventListener("click", async function () {
-          await requestAccessToken();
-        });
+      async function loadApiConfig() {
+        try {
+          const response = await fetch("get_config.php");
+          const data = await response.json();
+
+          if (data && data.success) {
+            clientId = data.client_id;
+            Google_apikey = data.api_key;
+
+            // Make these values available to the fonctions.js file
+            window.clientId = clientId;
+            window.Google_apikey = Google_apikey;
+
+            console.log("API configuration loaded successfully");
+          } else {
+            console.error("Failed to load API configuration:", data.message);
+            alert(
+              "Failed to load API configuration. Please contact the administrator."
+            );
+          }
+        } catch (error) {
+          console.error("Error loading API configuration:", error);
+          alert(
+            "Error loading API configuration. Please contact the administrator."
+          );
+        }
+      }
+
       document
         .getElementById("pick-file")
         .addEventListener("click", function () {
           loadPicker();
         });
-      // Save the content of the textarea on each change
-      // document
-      //   .getElementById("OpenAI-prompt")
-      //   .addEventListener("input", savePromptContent);
 
-      // Add an event listener to the "(Re)convert Google Doc" button
-      document
-        .getElementById("parse-file")
-        .addEventListener("click", async () => {
-          const fileId = sessionStorage.getItem("fileId");
-          console.log("Parsing Google doc with fileId:", fileId);
-          document.getElementById("parse-result").innerHTML = "";
-          parsedContent = await parseGoogleDoc(fileId);
-          displayParsedContent(parsedContent);
-        });
-      // document
-      //   .getElementById("send-prompt-OpenAI")
-      //   .addEventListener("click", sendPromptOpenAI);
-      function displayParsedContent(content) {
-        console.log("display parsed content");
-      }
-      // function restorePromptContent() {
-      //   const promptContent = sessionStorage.getItem("OpenAIPromptContent");
-      //   if (promptContent) {
-      //     document.getElementById("OpenAI-prompt").value = promptContent;
-      //   }
-      // }
-      // function savePromptContent() {
-      //   const promptContent = document.getElementById("OpenAI-prompt").value;
-      //   sessionStorage.setItem("OpenAIPromptContent", promptContent);
-      // }
-      // async function sendPromptOpenAI() {
-      //   const selectedItems = Array.from(
-      //     document.querySelectorAll(
-      //       '#parse-result input[type="checkbox"]:checked'
-      //     )
-      //   );
-      //   var prompt = document.getElementById("OpenAI-prompt").value;
-      //   var response = (document.getElementById(
-      //     "response-OpenAI-container"
-      //   ).innerHTML = "");
-      //   await sendOpenAI(prompt, items);
-      // }
-      function saveSettings() {
-        clientId = document.getElementById("client-id").value;
-        Google_apikey = document.getElementById("Google-api-key").value;
-        // OpenAI_apikey = document.getElementById("OpenAI-api-key").value;
-        if (!clientId || !Google_apikey) {
-          document.getElementById("warning-message").style.display = "block";
-          return;
+      document.addEventListener("DOMContentLoaded", function () {
+        // Add click event listener to the parse-file button
+        const parseButton = document.getElementById("parse-file");
+        if (parseButton) {
+          parseButton.addEventListener("click", async function () {
+            // Get file ID from session storage
+            const fileId = sessionStorage.getItem("fileId");
+            if (!fileId) {
+              alert("Please select a Google document first");
+              return;
+            }
+
+            // Check if access token is available
+            accessToken = getAccessToken();
+            if (!accessToken) {
+              console.log("No access token available, requesting one");
+              try {
+                await requestAccessToken();
+              } catch (error) {
+                console.error("Error requesting access token:", error);
+                alert(
+                  "Failed to authenticate with Google. Please refresh the page and try again."
+                );
+                return;
+              }
+            }
+
+            // Show loading animation
+            this.disabled = true;
+            const originalText = this.textContent;
+            this.innerHTML = `
+        <span class="spinner" style="display: inline-block; width: 16px; height: 16px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s linear infinite; margin-right: 10px; vertical-align: middle;"></span>
+        Converting...
+      `;
+
+            // Create or get the result container
+            let resultContainer = document.getElementById("parse-result");
+            if (!resultContainer) {
+              resultContainer = document.createElement("div");
+              resultContainer.id = "parse-result";
+              this.parentNode.appendChild(resultContainer);
+            }
+
+            // Clear any previous results
+            resultContainer.innerHTML = "";
+
+            try {
+              // Call the function to parse the document
+              await parseGoogleDoc(fileId);
+
+              // Reset button after processing completes
+              this.disabled = false;
+              this.innerHTML = originalText;
+            } catch (error) {
+              console.error("Error parsing document:", error);
+
+              // Reset button and show error
+              this.disabled = false;
+              this.innerHTML = originalText;
+
+              // Display error message
+              resultContainer.innerHTML = `
+          <div style="padding: 15px; border-radius: 5px; margin-top: 20px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">
+            <h3>Error converting document</h3>
+            <p>${error.message || "An unexpected error occurred"}</p>
+            <p>Please try again or check if you have proper permissions for this document.</p>
+          </div>
+        `;
+            }
+          });
         }
-        localStorage.setItem("client_id", clientId);
-        localStorage.setItem("Google-apikey", Google_apikey);
-        // localStorage.setItem("OpenAI-apikey", OpenAI_apikey);
-        document.getElementById("warning-message").style.display = "none";
-      }
+      });
     </script>
   </body>
 </html>

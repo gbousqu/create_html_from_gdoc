@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin - Google Doc Converter</title>
+    <style>
+      body {
+        font-family: "Roboto", sans-serif;
+        font-size: 0.9em;
+        background-color: #f5f5f5;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+      h1,
+      h2,
+      h3 {
+        color: #4285f4;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input[type="text"],
+      input[type="password"] {
+        width: calc(100% - 20px);
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-top: 10px;
+        background-color: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1em;
+      }
+      button:hover {
+        background-color: #357ae8;
+      }
+      #warning-message,
+      #success-message {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+      }
+      #warning-message {
+        color: #721c24;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        display: none;
+      }
+      #success-message {
+        color: #155724;
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        display: none;
+      }
+      .instructions {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-left: 4px solid #4285f4;
+        margin: 20px 0;
+      }
+      .login-container {
+        text-align: center;
+        padding: 40px 0;
+      }
+      .config-container {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Administration - Google Doc Converter</h1>
+
+      <!-- Login Section -->
+      <div id="login-container" class="login-container">
+        <h2>Administration Login</h2>
+        <label for="admin-password">Password:</label>
+        <input type="password" id="admin-password" />
+        <button id="login-button">Login</button>
+        <div
+          id="login-error"
+          style="color: red; display: none; margin-top: 10px"
+        >
+          Incorrect password
+        </div>
+      </div>
+
+      <!-- Configuration Section -->
+      <div id="config-container" class="config-container">
+        <h2>API Configuration</h2>
+
+        <div class="instructions">
+          <h3>Instructions to obtain API keys:</h3>
+          <ol>
+            <li>
+              Go to
+              <a href="https://console.cloud.google.com/" target="_blank"
+                >Google Cloud Console</a
+              >
+            </li>
+            <li>Create a project or select an existing project</li>
+            <li>
+              Enable the following APIs:
+              <ul>
+                <li>Google Drive API</li>
+                <li>Google Docs API</li>
+              </ul>
+            </li>
+            <li>
+              Create credentials:
+              <ul>
+                <li>
+                  For OAuth Client ID: Create OAuth 2.0 credentials for a Web
+                  application
+                </li>
+                <li>
+                  For API Key: Create an API key and restrict it to the
+                  necessary APIs
+                </li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+
+        <label for="client-id">Client ID OAuth:</label>
+        <input type="text" id="client-id" />
+
+        <label for="Google-api-key">Google API Key:</label>
+        <input type="text" id="Google-api-key" />
+
+        <label for="admin-new-password"
+          >Change Admin Password (leave empty to keep current):</label
+        >
+        <input type="password" id="admin-new-password" />
+
+        <div id="warning-message">Client ID and API Key are required.</div>
+        <div id="success-message">Settings saved successfully!</div>
+
+        <button id="save-settings">Save Settings</button>
+        <button id="logout-button" style="background-color: #6c757d">
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Default password
+      let defaultPassword = "admin";
+
+      // Check if there's a stored password
+      document.addEventListener("DOMContentLoaded", function () {
+        // Try to load existing settings
+        fetch("get_config.php")
+          .then((response) => response.json())
+          .then((data) => {
+            if (data && data.success) {
+              if (data.admin_password) {
+                defaultPassword = data.admin_password;
+              }
+
+              // Pre-fill existing settings (only when logged in)
+              if (
+                document.getElementById("config-container").style.display ===
+                "block"
+              ) {
+                if (data.client_id)
+                  document.getElementById("client-id").value = data.client_id;
+                if (data.api_key)
+                  document.getElementById("Google-api-key").value =
+                    data.api_key;
+              }
+            }
+          })
+          .catch((error) => console.error("Error loading config:", error));
+      });
+
+      // Login button click event
+      document
+        .getElementById("login-button")
+        .addEventListener("click", function () {
+          const password = document.getElementById("admin-password").value;
+
+          if (password === defaultPassword) {
+            document.getElementById("login-container").style.display = "none";
+            document.getElementById("config-container").style.display = "block";
+            document.getElementById("login-error").style.display = "none";
+
+            // Load existing settings
+            fetch("get_config.php")
+              .then((response) => response.json())
+              .then((data) => {
+                if (data && data.success) {
+                  if (data.client_id)
+                    document.getElementById("client-id").value = data.client_id;
+                  if (data.api_key)
+                    document.getElementById("Google-api-key").value =
+                      data.api_key;
+                }
+              })
+              .catch((error) => console.error("Error loading config:", error));
+          } else {
+            document.getElementById("login-error").style.display = "block";
+          }
+        });
+
+      // Logout button click event
+      document
+        .getElementById("logout-button")
+        .addEventListener("click", function () {
+          document.getElementById("login-container").style.display = "block";
+          document.getElementById("config-container").style.display = "none";
+          document.getElementById("admin-password").value = "";
+        });
+
+      // Save settings button click event
+      document
+        .getElementById("save-settings")
+        .addEventListener("click", function () {
+          const clientId = document.getElementById("client-id").value;
+          const apiKey = document.getElementById("Google-api-key").value;
+          const newPassword =
+            document.getElementById("admin-new-password").value;
+
+          if (!clientId || !apiKey) {
+            document.getElementById("warning-message").style.display = "block";
+            document.getElementById("success-message").style.display = "none";
+            return;
+          }
+
+          // Prepare data for saving
+          const formData = new FormData();
+          formData.append("client_id", clientId);
+          formData.append("api_key", apiKey);
+          if (newPassword) {
+            formData.append("admin_password", newPassword);
+            defaultPassword = newPassword;
+          }
+
+          // Save settings
+          fetch("save_config.php", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                document.getElementById("warning-message").style.display =
+                  "none";
+                document.getElementById("success-message").style.display =
+                  "block";
+                document.getElementById("admin-new-password").value = "";
+
+                // Hide success message after 3 seconds
+                setTimeout(function () {
+                  document.getElementById("success-message").style.display =
+                    "none";
+                }, 3000);
+              } else {
+                alert("Error: " + data.message);
+              }
+            })
+            .catch((error) => {
+              console.error("Error saving settings:", error);
+              alert("Error saving settings. Please try again.");
+            });
+        });
+    </script>
+  </body>
+</html>

@@ -1,9 +1,13 @@
 var tokenClient;
-var clientId;
-var Google_apikey;
-var OpenAI_apikey;
 var accessToken;
 
+function getClientId() {
+  return window.clientId;
+}
+
+function getApiKey() {
+  return window.Google_apikey;
+}
 // Function to extract the document ID from the URL
 function extractGoogleDocId(url) {
   // URL pattern: https://docs.google.com/document/d/DOCUMENT_ID/edit
@@ -31,7 +35,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const docId = extractGoogleDocId(docUrl);
 
       if (docId) {
-        console.log("Extracted document ID:", docId);
         sessionStorage.setItem("fileId", docId);
         showFilePreview(docId);
       } else {
@@ -50,16 +53,8 @@ async function loadGoogleIdentityServicesScript() {
 async function initializeGoogleApis() {
   console.log("Initializing Google APIs...");
 
-  clientId = localStorage.getItem("client_id") || "";
-  Google_apikey = localStorage.getItem("Google-apikey") || "";
-  // OpenAI_apikey = localStorage.getItem("OpenAI-apikey") || "";
-
-  document.getElementById("client-id").value = clientId;
-  document.getElementById("Google-api-key").value = Google_apikey;
-  // document.getElementById("OpenAI-api-key").value = OpenAI_apikey;
-
   if (sessionStorage.getItem("accessToken")) {
-    accessToken = sessionStorage.getItem("accessToken");
+    accessToken = getAccessToken();
     console.log("Access token found in session storage: " + accessToken);
     const isValid = await checkAccessToken(accessToken);
     if (!isValid) {
@@ -68,14 +63,17 @@ async function initializeGoogleApis() {
     }
 
     await initializeGoogleApiClient(); // Await the initialization of Google API client
-  } else if (clientId && Google_apikey) {
-    console.log("Client ID and API key found in local storage.");
+  } else if (window.clientId && window.Google_apikey) {
+    console.log("Client ID and API key found from server configuration.");
     await requestAccessToken();
     console.log("Setting pick-file button to visible");
     document.getElementById("pick-file").style.display = "block";
     await initializeGoogleApiClient(); // Await the initialization of Google API client
   } else {
-    document.getElementById("warning-message").style.display = "block";
+    console.error(
+      "No API credentials available. Please contact the administrator."
+    );
+    alert("No API credentials available. Please contact the administrator.");
   }
 }
 
@@ -110,7 +108,7 @@ async function requestAccessToken() {
   if (!tokenClient) {
     // Create the tokenClient only once
     tokenClient = await google.accounts.oauth2.initTokenClient({
-      client_id: clientId,
+      client_id: getClientId(),
       scope: [
         "https://www.googleapis.com/auth/drive.metadata.readonly",
         "https://www.googleapis.com/auth/documents",
@@ -159,6 +157,9 @@ async function checkAccessToken(accessToken) {
       console.log("Token is invalid or expired:", data.error || "Expired");
       return false;
     }
+
+    // Add message when token is valid
+    console.log("Token is valid, expires in:", data.expires_in, "seconds");
     return true;
   } catch (error) {
     return false;
@@ -185,40 +186,38 @@ async function initializeGoogleApiClient() {
   });
 }
 
-async function loadPicker() {
-  console.log("\n\n Loading Google Picker...");
+function getAccessToken() {
+  return sessionStorage.getItem("accessToken");
+}
 
-  // in case gapi is not defined
-  await loadGoogleApiScript();
+function loadPicker() {
+  // Check if we already have a token
+  accessToken = getAccessToken();
 
   if (!accessToken) {
-    console.log("No access token available, requesting one...");
-    await requestAccessToken();
-    console.log("launching picker");
-    gapi.load("picker", { callback: onPickerApiLoad });
+    console.log("No access token available, requesting one first");
+    requestAccessToken().then(() => {
+      // Only after we have a token, load the picker
+      loadPickerAPI();
+    });
   } else {
-    const isValid = await checkAccessToken(accessToken);
-    if (!isValid) {
-      console.log("Access token is invalid, requesting a new one...");
-      await requestAccessToken();
-      console.log("launching picker");
-      gapi.load("picker", { callback: onPickerApiLoad });
-    } else {
-      console.log("Access token is valid:", accessToken);
-      console.log("launching picker");
-      gapi.load("picker", { callback: onPickerApiLoad });
-    }
+    // We already have a token, just load the picker
+    loadPickerAPI();
   }
 }
 
+function loadPickerAPI() {
+  console.log("Loading picker API");
+  gapi.load("picker", { callback: onPickerApiLoad });
+}
 function onPickerApiLoad() {
   console.log("Picker loading.");
   // List view
   const docsView = new google.picker.DocsView(google.picker.ViewId.DOCUMENTS);
 
   const picker = new google.picker.PickerBuilder()
-    .setAppId(Google_apikey)
-    .setDeveloperKey(Google_apikey)
+    .setAppId(getApiKey())
+    .setDeveloperKey(getApiKey())
     .setOAuthToken(accessToken)
     .addView(docsView)
     .setCallback(pickerCallback)
@@ -249,7 +248,7 @@ async function showFilePreview(fileId) {
     await initializeGoogleApiClient();
   }
 
-  gapi.client.setApiKey(Google_apikey);
+  gapi.client.setApiKey(getApiKey());
   gapi.client.setToken({ access_token: accessToken });
 
   try {
@@ -291,6 +290,7 @@ async function parseGoogleDoc(fileId) {
   }
 
   // Check if the access token is valid
+  accessToken = getAccessToken();
   const isValid = await checkAccessToken(accessToken);
   if (!isValid) {
     console.log("Access token is invalid, requesting a new one...");
@@ -346,11 +346,6 @@ async function parseGoogleDoc(fileId) {
       }
     }
 
-    console.log(
-      "Total lists found in the entire document:",
-      Object.keys(allLists).length
-    );
-
     // Use all collected lists instead of just docData.lists
     const docLists = allLists;
 
@@ -395,7 +390,6 @@ async function parseGoogleDoc(fileId) {
 
             // Detect richLinks (Google Drive links as bullets)
             else if (paraElement.richLink) {
-              console.log("Found richLink:", paraElement.richLink);
               if (paraElement.richLink.richLinkId) {
                 inlineObjectIds.push(paraElement.richLink.richLinkId);
               }
@@ -481,8 +475,6 @@ async function parseGoogleDoc(fileId) {
       if (inlineObjectsData[id].type === "image" && inlineObjectsData[id].uri) {
         // Check if the image already exists
         if (existingImages[id]) {
-          console.log(`Image ${id} already exists, reusing local file`);
-
           // Add local file information instead of base64
           const extension = existingImages[id].extension;
           inlineObjectsData[id].localFilePath = `images/${id}.${extension}`;
@@ -556,8 +548,6 @@ async function parseGoogleDoc(fileId) {
     // Generate the site HTML
     const siteHtml = generateSiteHtml(docTitle, tabsData, inlineObjectsData);
 
-    console.log("Generated HTML length:", siteHtml ? siteHtml.length : 0);
-
     // Display or download the result
     displayGeneratedSite(siteHtml, inlineObjectsData, docTitle);
 
@@ -612,9 +602,6 @@ function parseTabContent(content, docLists) {
 
   // Function that determines the list type and CSS class to use
   function getListTypeAndClass(bullet, nestingLevel, paragraphHtml) {
-    // Detailed log of the bullet object for inspection
-    console.log("DEBUG BULLET: ", JSON.stringify(bullet, null, 2));
-
     let isOrdered = false;
     let cssClass = "";
 
@@ -631,7 +618,6 @@ function parseTabContent(content, docLists) {
         listProperties.nestingLevels[nestingLevel]
       ) {
         const nestingLevelProps = listProperties.nestingLevels[nestingLevel];
-        console.log(`List properties for ${listId}:`, nestingLevelProps);
 
         if (nestingLevelProps.glyphType) {
           const orderedTypes = [
@@ -655,28 +641,13 @@ function parseTabContent(content, docLists) {
           else if (nestingLevelProps.glyphType === "ROMAN")
             cssClass = "lower-roman";
 
-          console.log(
-            `List detected as: ${isOrdered ? "ordered" : "unordered"}, class: ${
-              cssClass || "none"
-            }`
-          );
           return {
             tag: isOrdered ? "ol" : "ul",
             class: cssClass,
           };
         }
       }
-    } else {
-      console.log(
-        `List with ID ${listId} not found in docLists or docLists not provided`
-      );
     }
-
-    console.log(
-      `FINAL RESULT: tag=${isOrdered ? "ol" : "ul"}, class=${
-        cssClass || "none"
-      }`
-    );
 
     return {
       tag: isOrdered ? "ol" : "ul",
@@ -751,12 +722,7 @@ function parseTabContent(content, docLists) {
       // detect the type of list item and CSS class
       if (paragraph.bullet) {
         const listId = paragraph.bullet.listId;
-        // console.log("listId for this bullet paragraph:", listId);
         const nestingLevel = paragraph.bullet.nestingLevel || 0;
-
-        console.log(
-          `\n ${paragraphHtml.substring(0, 40)} === LEVEL=${nestingLevel} ===`
-        );
 
         // Determine the list type and class for this specific level
         const listInfo = getListTypeAndClass(
@@ -768,20 +734,16 @@ function parseTabContent(content, docLists) {
         const listTag = listInfo.tag;
         const listClass = listInfo.class ? ` class="${listInfo.class}"` : "";
 
-        console.log(`Generated HTML for list: <${listTag}${listClass}>`);
-
         // Handle list changes and nesting levels
         if (currentListId !== listId) {
           // Close all open lists if it's a new list
           while (openLists.length > 0) {
             const lastList = openLists.pop();
             htmlContent += `</${lastList.tag}>`;
-            console.log(`Closing list: </${lastList.tag}>`);
           }
 
           // Start a new list
           htmlContent += `<${listTag}${listClass}>`;
-          console.log(`Opening new list: <${listTag}${listClass}>`);
 
           openLists.push({
             id: listId,
@@ -795,10 +757,6 @@ function parseTabContent(content, docLists) {
         }
         // Same list but different level
         else if (currentNestingLevel !== nestingLevel) {
-          console.log(
-            `Level change: ${currentNestingLevel} -> ${nestingLevel}`
-          );
-
           if (nestingLevel > currentNestingLevel) {
             // Before opening a nested list, ensure we have closed the current <li>
             // or add a <li> if necessary, then open the new list
@@ -842,12 +800,6 @@ function parseTabContent(content, docLists) {
                   tag: isLevelOrdered ? "ol" : "ul",
                   class: levelClass,
                 };
-
-                console.log(
-                  `Level ${i} found in docLists: type=${levelInfo.tag}, class=${
-                    levelInfo.class || "none"
-                  }`
-                );
               } else {
                 // Fallback if specific information is not available
                 levelInfo = getListTypeAndClass(paragraph.bullet, i, "");
@@ -860,9 +812,6 @@ function parseTabContent(content, docLists) {
 
               // Simply open the new list
               htmlContent += `<${levelTag}${levelClass}>`;
-              console.log(
-                `Opening nested list level ${i}: <${levelTag}${levelClass}>`
-              );
 
               openLists.push({
                 id: listId,
@@ -880,7 +829,6 @@ function parseTabContent(content, docLists) {
                 const lastList = openLists.pop();
                 // Close only the list tag without </li>
                 htmlContent += `</${lastList.tag}>`;
-                console.log(`Closing nested list: </${lastList.tag}>`);
               }
             }
           }
@@ -889,9 +837,6 @@ function parseTabContent(content, docLists) {
 
         // Add the list item
         htmlContent += `<li>${paragraphHtml}`;
-        console.log(
-          `Adding list item: <li>${paragraphHtml.substring(0, 20)}...`
-        );
       } else {
         // Close all open lists at the end
         while (openLists.length > 0) {
@@ -903,7 +848,6 @@ function parseTabContent(content, docLists) {
             // For nested lists, close only the list
             htmlContent += `</${lastList.tag}>`;
           }
-          console.log(`Closing list: </${lastList.tag}>`);
         }
         currentListId = null;
         currentNestingLevel = -1;
@@ -974,7 +918,6 @@ function parseTabContent(content, docLists) {
       // For nested lists, close only the list
       htmlContent += `</${lastList.tag}>`;
     }
-    console.log(`Closing list: </${lastList.tag}>`);
   }
 
   return htmlContent;
@@ -1116,11 +1059,8 @@ function parseTableContent(table) {
 
 async function getInlineObjectsData(fileId, inlineObjectIds) {
   if (!inlineObjectIds || inlineObjectIds.length === 0) {
-    console.log("No inline object IDs found");
     return {};
   }
-
-  console.log(`Fetching data for ${inlineObjectIds.length} inline objects`);
 
   try {
     // Request the document with includeTabsContent: true to get all objects
@@ -1183,13 +1123,6 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
       for (const tab of tabs) {
         // Extract inlineObjects from each tab
         if (tab.documentTab && tab.documentTab.inlineObjects) {
-          console.log(
-            `Found ${
-              Object.keys(tab.documentTab.inlineObjects).length
-            } inline objects in the tab ${
-              tab.tabProperties?.title || "untitled"
-            }`
-          );
           Object.assign(allInlineObjects, tab.documentTab.inlineObjects);
         }
 
@@ -1213,12 +1146,6 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
     if (docData.tabs && docData.tabs.length > 0) {
       extractObjectsFromTabs(docData.tabs);
     }
-
-    console.log(
-      `Total inline objects found: ${Object.keys(allInlineObjects).length}`
-    );
-    console.log(`Total richLinks found: ${Object.keys(allRichLinks).length}`);
-    console.log(`Requested IDs: ${inlineObjectIds.length}`);
 
     const objectsData = {};
 
@@ -1258,9 +1185,6 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
             height: height,
             rotation: rotation,
           };
-          console.log(
-            `URI found for image ${id}: ${embedId}, dimensions: ${width}x${height}`
-          );
         } else {
           console.warn(`Unrecognized object type for ${id}`, embeddedObject);
         }
@@ -1268,8 +1192,6 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
       // Check if it's a richLink
       else if (allRichLinks[id]) {
         const richLink = allRichLinks[id];
-        console.log(`Analyzing richLink ${id}:`, richLink);
-
         // Extract the URL and metadata from the richLink
         let uri = richLink.uri;
         let title = richLink.title || "Link to file";
@@ -1376,10 +1298,6 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
           }
         }
 
-        console.log(
-          `RichLink detection: ID=${id}, URL=${uri}, MIME=${mimeType}, detected as type=${fileType} (source: ${fileTypeSource})`
-        );
-
         objectsData[id] = {
           type: "driveFile",
           url: uri,
@@ -1389,19 +1307,9 @@ async function getInlineObjectsData(fileId, inlineObjectIds) {
           mimeType: mimeType,
           fileTypeSource: fileTypeSource,
         };
-        console.log(
-          `Processed richLink: ${id}, URL: ${uri}, Title: ${title}, Type: ${fileType}`
-        );
-      } else {
-        console.warn(`Object ${id} not found in inlineObjects or richLinks`);
       }
     }
 
-    console.log(
-      `Data retrieved for ${Object.keys(objectsData).length} out of ${
-        inlineObjectIds.length
-      } objects`
-    );
     return objectsData;
   } catch (error) {
     console.error("Error fetching inline objects:", error);
@@ -1537,7 +1445,6 @@ function generateSiteHtml(docTitle, tabsData, objectData) {
           
           // Replace the placeholder with the link
           obj.parentNode.replaceChild(link, obj);
-          console.log('Drive link replaced for objectId:', objectId);
         }
       });
     };
@@ -1785,12 +1692,9 @@ async function saveGeneratedSite(htmlContent, imagesData, docTitle) {
     }
 
     const folderInfo = await createFoldersResponse.json();
-    console.log("Folder information:", folderInfo);
 
     // Save the main HTML file in the unique folder
     const filename = `${folderName}/index.html`;
-
-    console.log("Saving HTML, length:", htmlContent ? htmlContent.length : 0);
 
     const saveHtmlResponse = await fetch("save_file.php", {
       method: "POST",
@@ -1808,7 +1712,6 @@ async function saveGeneratedSite(htmlContent, imagesData, docTitle) {
     }
 
     const saveHtmlResponseData = await saveHtmlResponse.json();
-    console.log("Server response after HTML save:", saveHtmlResponseData);
 
     // Process and save each image in the images subfolder
     const savedImages = {};
@@ -1818,9 +1721,6 @@ async function saveGeneratedSite(htmlContent, imagesData, docTitle) {
         try {
           // If the image has a local path, it already exists and does not need to be saved
           if (imageData.skipProcessing && imageData.localFilePath) {
-            console.log(
-              `Image ${objectId} already exists, reusing: ${imageData.localFilePath}`
-            );
             savedImages[objectId] = imageData.localFilePath;
             continue;
           }
@@ -1861,7 +1761,6 @@ async function saveGeneratedSite(htmlContent, imagesData, docTitle) {
 
             // Save the local image path for HTML update
             savedImages[objectId] = data.path;
-            console.log(`Image ${objectId} saved successfully at ${data.path}`);
           }
         } catch (imageError) {
           console.error(`Error processing image ${objectId}:`, imageError);
@@ -1923,56 +1822,61 @@ async function displayGeneratedSite(htmlContent, imageData, docTitle) {
       downloadHeading.textContent = "Site generated successfully!";
       downloadHeading.style.color = "#34a853";
 
+      // Action buttons container
+      const actionContainer = document.createElement("div");
+      actionContainer.style.display = "flex";
+      actionContainer.style.gap = "10px";
+      actionContainer.style.margin = "15px 0";
+
+      // View site button
       const siteLink = document.createElement("a");
       siteLink.href = result.url;
       siteLink.target = "_blank";
       siteLink.className = "site-link";
-      siteLink.textContent = "View generated site";
+      siteLink.textContent = "View Generated Site";
       siteLink.style.display = "inline-block";
       siteLink.style.padding = "10px 15px";
-      siteLink.style.backgroundColor = "#4285f4";
+      siteLink.style.backgroundColor = "#4CAF50"; // Green
       siteLink.style.color = "white";
       siteLink.style.borderRadius = "4px";
       siteLink.style.textDecoration = "none";
-      siteLink.style.margin = "10px 0";
+      siteLink.style.textAlign = "center";
+      siteLink.style.minWidth = "150px";
 
-      const pathInfo = document.createElement("div");
-      pathInfo.style.marginTop = "15px";
-      pathInfo.style.backgroundColor = "#e8f0fe";
-      pathInfo.style.padding = "10px";
-      pathInfo.style.borderRadius = "4px";
-      pathInfo.style.border = "1px solid #4285f4";
+      // Download as ZIP button
+      const downloadZipLink = document.createElement("a");
+      downloadZipLink.href = `download_site.php?folder=${result.folder}`;
+      downloadZipLink.className = "download-zip-link";
+      downloadZipLink.textContent = "Download as ZIP";
+      downloadZipLink.style.display = "inline-block";
+      downloadZipLink.style.padding = "10px 15px";
+      downloadZipLink.style.backgroundColor = "#FF9800"; // Orange
+      downloadZipLink.style.color = "white";
+      downloadZipLink.style.borderRadius = "4px";
+      downloadZipLink.style.textDecoration = "none";
+      downloadZipLink.style.textAlign = "center";
+      downloadZipLink.style.minWidth = "150px";
 
-      pathInfo.innerHTML = `
-        <p><strong>Information:</strong></p>
-        <ul>
-          <li>The site was generated in the folder <code>output/${
-            result.folder
-          }/</code></li>
-          <li>Main HTML file: <code>output/${
-            result.folder
-          }/index.html</code></li>
-          <li>Images: <code>output/${result.folder}/images/</code></li>
-          <li>${
-            result.folderExisted
-              ? "The folder already existed, its content has been updated."
-              : "A new folder was created for this document."
-          }</li>
-          <li>You can copy all the content of the folder <code>output/${
-            result.folder
-          }</code> to host it elsewhere</li>
-        </ul>
-      `;
+      // Add buttons to container
+      actionContainer.appendChild(siteLink);
+      actionContainer.appendChild(downloadZipLink);
 
+      // Info message
+      const infoMessage = document.createElement("p");
+      infoMessage.textContent =
+        "The site has been generated successfully. You can view it online or download it as a ZIP archive.";
+
+      // Add elements to the main container
       downloadContainer.appendChild(downloadHeading);
-      downloadContainer.appendChild(siteLink);
-      downloadContainer.appendChild(pathInfo);
+      downloadContainer.appendChild(infoMessage);
+      downloadContainer.appendChild(actionContainer);
 
       resultContainer.innerHTML = "";
       resultContainer.appendChild(downloadContainer);
 
-      // Open the site in a new tab
-      window.open(result.url, "_blank");
+      // Store the URL in sessionStorage for later use
+      sessionStorage.setItem("generatedSiteUrl", result.url);
+      sessionStorage.setItem("generatedSiteFolder", result.folder);
     } else {
       // Display an error message
       resultContainer.innerHTML = `
@@ -1997,16 +1901,12 @@ async function displayGeneratedSite(htmlContent, imageData, docTitle) {
 }
 async function convertImageToBase64(url) {
   try {
-    console.log("Converting image to base64:", url);
-
     // Check if the URL is already in base64
     if (url.startsWith("data:image")) {
-      console.log("URL is already in base64 format, returning as is");
       return url;
     }
 
     const proxyUrl = `proxy_googlecontent.php?url=${encodeURIComponent(url)}`;
-    console.log("Fetching image via proxy:", proxyUrl);
 
     const response = await fetch(proxyUrl);
     if (!response.ok) {
@@ -2025,15 +1925,10 @@ async function convertImageToBase64(url) {
     }
 
     const blob = await response.blob();
-    console.log("Image fetched, size:", Math.round(blob.size / 1024), "KB");
 
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        console.log(
-          "Image converted to base64 successfully, format:",
-          reader.result.substring(0, 30) + "..."
-        );
         resolve(reader.result);
       };
       reader.onerror = (e) => {

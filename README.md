@@ -70,19 +70,19 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 
 1. Clone or download this repository to your web server's public directory
 2. Ensure the `output` directory exists and has write permissions
-3. Obtain Google API credentials:
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project
+3. Access the administration page (`admin.html`) to configure your Google API credentials:
+   - Default admin password is "admin"
+   - Follow the instructions to obtain Google API credentials from the [Google Cloud Console](https://console.cloud.google.com/)
    - Enable the Google Drive API and Google Docs API
    - Create OAuth credentials (Web application type)
-   - Note your Client ID and API Key
+   - Create an API Key and properly restrict it
+   - Save these credentials in the admin interface
 
 ## 🚀 Usage
 
 <div style="background-color: #f8f9fa; border-radius: 8px; padding: 15px; margin: 20px 0; border: 1px solid #dadce0;">
 <ol>
   <li>Open the application in your web browser</li>
-  <li>Enter your Google API credentials (they will be saved in your browser's local storage)</li>
   <li>Authenticate with your Google account</li>
   <li>Enter a Google Doc URL or use the picker to select a document</li>
   <li>Click "Generate HTML Site" to process the document</li>
@@ -93,56 +93,30 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 
 ## 📂 File Structure
 
-<table style="width:100%; border-collapse: collapse; margin: 20px 0;">
-  <tr style="background-color: #4285f4; color: white;">
-    <th style="padding: 10px; text-align: left;">File</th>
-    <th style="padding: 10px; text-align: left;">Description</th>
-  </tr>
-  <tr style="background-color: #f5f7fa;">
-    <td style="padding: 8px; border: 1px solid #dadce0;"><code>index.html</code></td>
-    <td style="padding: 8px; border: 1px solid #dadce0;">Main application interface</td>
-  </tr>
-  <tr>
-    <td style="padding: 8px; border: 1px solid #dadce0;"><code>fonctions.js</code></td>
-    <td style="padding: 8px; border: 1px solid #dadce0;">Core JavaScript functionality for Google API integration and document processing</td>
-  </tr>
-  <tr style="background-color: #f5f7fa;">
-    <td style="padding: 8px; border: 1px solid #dadce0;"><code>styles.css</code></td>
-    <td style="padding: 8px; border: 1px solid #dadce0;">Stylesheet for the application interface</td>
-  </tr>
-  <tr>
-    <td style="padding: 8px; border: 1px solid #dadce0;"><code>output/</code></td>
-    <td style="padding: 8px; border: 1px solid #dadce0;">Directory where generated sites are stored</td>
-  </tr>
-  <tr style="background-color: #f5f7fa;">
-    <td style="padding: 8px; border: 1px solid #dadce0;"><code>proxy_googlecontent.php</code></td>
-    <td style="padding: 8px; border: 1px solid #dadce0;">Proxy for fetching Google content</td>
-  </tr>
-  <tr>
-    <td style="padding: 8px; border: 1px solid #dadce0;"><code>save_file.php</code>, <code>save_image.php</code></td>
-    <td style="padding: 8px; border: 1px solid #dadce0;">Helper scripts for saving generated files</td>
-  </tr>
-  <tr style="background-color: #f5f7fa;">
-    <td style="padding: 8px; border: 1px solid #dadce0;"><code>list_images.php</code></td>
-    <td style="padding: 8px; border: 1px solid #dadce0;">Script to list existing images for reuse</td>
-  </tr>
-  <tr>
-    <td style="padding: 8px; border: 1px solid #dadce0;"><code>get_base_url.php</code></td>
-    <td style="padding: 8px; border: 1px solid #dadce0;">Script to determine the base URL of the application</td>
-  </tr>
-  <tr style="background-color: #f5f7fa;">
-    <td style="padding: 8px; border: 1px solid #dadce0;"><code>create_folders.php</code></td>
-    <td style="padding: 8px; border: 1px solid #dadce0;">Script to create output folders</td>
-  </tr>
-</table>
+<tr>
+  <td style="padding: 8px; border: 1px solid #dadce0;"><code>admin.html</code></td>
+  <td style="padding: 8px; border: 1px solid #dadce0;">Administration interface for managing API credentials</td>
+</tr>
+<tr style="background-color: #f5f7fa;">
+  <td style="padding: 8px; border: 1px solid #dadce0;"><code>get_config.php</code></td>
+  <td style="padding: 8px; border: 1px solid #dadce0;">Script to retrieve API configuration</td>
+</tr>
+<tr>
+  <td style="padding: 8px; border: 1px solid #dadce0;"><code>save_config.php</code></td>
+  <td style="padding: 8px; border: 1px solid #dadce0;">Script to save API configuration</td>
+</tr>
+<tr style="background-color: #f5f7fa;">
+  <td style="padding: 8px; border: 1px solid #dadce0;"><code>assets/credentials.json</code></td>
+  <td style="padding: 8px; border: 1px solid #dadce0;">File storing API credentials (protected from direct access)</td>
+</tr>
 
 ## ⚙️ How It Works
 
 <div style="margin: 20px 0;">
-  <div style="display: flex; align-items: center; padding: 8px 0;">
-    <div style="background-color: #4285f4; color: white; min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;">1</div>
-    <div>The application authenticates with Google APIs using OAuth 2.0</div>
-  </div>
+<div style="display: flex; align-items: center; padding: 8px 0;">
+  <div style="background-color: #4285f4; color: white; min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;">1</div>
+  <div>The application loads API credentials from the server configuration and authenticates with Google APIs using OAuth 2.0</div>
+</div>
   
   <div style="display: flex; align-items: center; padding: 8px 0;">
     <div style="background-color: #34a853; color: white; min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;">2</div>
@@ -185,7 +159,9 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 <div style="background-color: #fce8e6; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 5px solid #ea4335;">
   <h4 style="color: #ea4335; margin-top: 0;">Authentication Issues</h4>
   <p>Ensure your Google API credentials are correct and have the necessary permissions</p>
-  
+    <h4 style="color: #ea4335;">Administration Access</h4>
+  <p>If you've lost your admin password, delete the credentials.json file in the assets directory and access admin.html again to reset with the default password "admin"</p>
+
   <h4 style="color: #ea4335;">Image Loading Problems</h4>
   <p>Check that the proxy script can access Google's servers</p>
   
