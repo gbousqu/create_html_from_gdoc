@@ -19,6 +19,7 @@ A web application that converts Google Docs documents with tabs and nested tabs 
     <ul>
       <li>Online viewing of the generated site</li>
       <li>Download the complete site as a ZIP archive</li>
+      <li>Folder structure preserved in the archive</li>
       <li>Easy to deploy on any web hosting</li>
     </ul>
   </div>
@@ -75,6 +76,7 @@ A web application that converts Google Docs documents with tabs and nested tabs 
    - Follow the instructions to obtain Google API credentials from the [Google Cloud Console](https://console.cloud.google.com/)
    - Enable the Google Drive API and Google Docs API
    - Create OAuth credentials (Web application type)
+   - Configure authorized JavaScript origins and redirect URIs in the Google Cloud Console
    - Create an API Key and properly restrict it
    - Save these credentials in the admin interface
 
@@ -83,8 +85,10 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 <div style="background-color: #f8f9fa; border-radius: 8px; padding: 15px; margin: 20px 0; border: 1px solid #dadce0;">
 <ol>
   <li>Open the application in your web browser</li>
-  <li>Enter a Google Doc URL or use the picker to select a document</li>
+  <li>Authentication with Google happens when you click the "Pick a file from Google Drive" button</li>
+  <li>Enter a Google Doc URL directly or use the picker to select a document</li>
   <li>Click "Convert Google Doc to HTML" to process the document</li>
+  <li>A loading animation indicates the conversion is in progress</li>
   <li>Once the conversion is complete, you have two options:
     <ul>
       <li>Click "View Generated Site" to open the site in a new tab</li>
@@ -163,14 +167,23 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 <div style="background-color: #fce8e6; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 5px solid #ea4335;">
   <h4 style="color: #ea4335; margin-top: 0;">Authentication Issues</h4>
   <p>Ensure your Google API credentials are correct and have the necessary permissions</p>
-    <h4 style="color: #ea4335;">Administration Access</h4>
+  <p>Make sure both "Authorized JavaScript origins" and "Authorized redirect URIs" are properly configured in your Google Cloud Console</p>
+  
+  <h4 style="color: #ea4335;">Authentication Error on Production Server</h4>
+  <p>If you receive "Failed to open popup window" errors, check that your domain is added to both the JavaScript origins and redirect URIs in the OAuth client settings</p>
+  
+  <h4 style="color: #ea4335;">Administration Access</h4>
   <p>If you've lost your admin password, delete the credentials.json file in the assets directory and access admin.html again to reset with the default password "admin"</p>
 
   <h4 style="color: #ea4335;">Image Loading Problems</h4>
   <p>Check that the proxy script can access Google's servers</p>
+  <p>Verify that the images directory has proper write permissions</p>
   
   <h4 style="color: #ea4335;">Write Permission Errors</h4>
   <p>Verify that the web server has write permissions to the output directory</p>
+  
+  <h4 style="color: #ea4335;">ZIP Download Issues</h4>
+  <p>Ensure the tmp directory exists and has proper write permissions</p>
 </div>
 
 ## 📄 License
