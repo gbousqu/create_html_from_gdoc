@@ -105,39 +105,67 @@ function loadScript(src) {
 async function requestAccessToken() {
   console.log("Requesting access token...");
 
-  if (!tokenClient) {
-    // Create the tokenClient only once
-    tokenClient = await google.accounts.oauth2.initTokenClient({
-      client_id: getClientId(),
-      scope: [
-        "https://www.googleapis.com/auth/drive.metadata.readonly",
-        "https://www.googleapis.com/auth/documents",
-        "https://www.googleapis.com/auth/documents.readonly",
-        "https://www.googleapis.com/auth/drive",
-        "https://www.googleapis.com/auth/drive.readonly",
-        "https://www.googleapis.com/auth/drive.file",
-        "https://www.googleapis.com/auth/drive.resource",
-      ].join(" "),
-      callback: (response) => {
-        if (response.error) {
-          console.error("Error during token request:", response.error);
-          // Reject the Promise
-          reject(response.error);
-          return;
-        }
-        console.log("Access token acquired:", response.access_token);
-        accessToken = response.access_token;
-        sessionStorage.setItem("accessToken", accessToken);
-        gapi.client.setToken({ access_token: accessToken });
-        // Resolve the Promise
-        resolve();
-      },
-    });
-  }
-
-  // Return a Promise
+  // Return a Promise that will be resolved when we get the token
   return new Promise((resolve, reject) => {
-    tokenClient.requestAccessToken();
+    try {
+      if (!tokenClient) {
+        // Create the tokenClient only once
+        const client = google.accounts.oauth2.initTokenClient({
+          client_id: getClientId(),
+          scope: [
+            "https://www.googleapis.com/auth/drive.metadata.readonly",
+            "https://www.googleapis.com/auth/documents",
+            "https://www.googleapis.com/auth/documents.readonly",
+            "https://www.googleapis.com/auth/drive",
+            "https://www.googleapis.com/auth/drive.readonly",
+            "https://www.googleapis.com/auth/drive.file",
+            "https://www.googleapis.com/auth/drive.resource",
+          ].join(" "),
+          callback: function (response) {
+            if (response.error) {
+              console.error("Error during token request:", response.error);
+              // Reject the Promise
+              reject(response.error);
+              return;
+            }
+            console.log("Access token acquired:", response.access_token);
+            accessToken = response.access_token;
+            sessionStorage.setItem("accessToken", accessToken);
+            resolve(accessToken);
+          },
+        });
+
+        // Store the tokenClient instance
+        tokenClient = client;
+
+        // Request the token
+        client.requestAccessToken();
+      } else {
+        // If tokenClient already exists, update its callback and request the token
+        tokenClient.callback = function (response) {
+          if (response.error) {
+            console.error("Error during token request:", response.error);
+            reject(response.error);
+            return;
+          }
+          console.log(
+            "Access token acquired (existing client):",
+            response.access_token
+          );
+          accessToken = response.access_token;
+          sessionStorage.setItem("accessToken", accessToken);
+          gapi.client.setToken({ access_token: accessToken });
+          console.log("Resolving the access token promise (existing client)");
+          resolve(accessToken);
+        };
+
+        // Request token using existing client
+        tokenClient.requestAccessToken();
+      }
+    } catch (error) {
+      console.error("Error initializing token client:", error);
+      reject(error);
+    }
   });
 }
 async function checkAccessToken(accessToken) {
@@ -206,8 +234,41 @@ function loadPicker() {
   }
 }
 
-function loadPickerAPI() {
+async function loadPickerAPI() {
   console.log("Loading picker API");
+  // Check if the access token is valid
+  accessToken = getAccessToken();
+  const isValid = await checkAccessToken(accessToken);
+  if (!isValid) {
+    console.log("Access token is invalid, requesting a new one...");
+    await requestAccessToken();
+  }
+
+  // Make sure gapi is loaded before trying to use it
+  if (typeof gapi === "undefined") {
+    console.log("gapi is not defined, loading Google API script first");
+    await loadGoogleApiScript();
+  }
+
+  // Initialize Google API client if not already done
+  if (typeof gapi.client === "undefined") {
+    console.log(
+      "gapi.client is not initialized, initializing Google API client"
+    );
+    await initializeGoogleApiClient();
+  }
+
+  // Set the access token in gapi client
+  if (typeof gapi.client !== "undefined") {
+    try {
+      gapi.client.setToken({ access_token: accessToken });
+      console.log("Token successfully set in gapi client");
+    } catch (err) {
+      console.warn("Could not set token in gapi client:", err);
+    }
+  }
+
+  // Now we can safely call gapi.load
   gapi.load("picker", { callback: onPickerApiLoad });
 }
 function onPickerApiLoad() {

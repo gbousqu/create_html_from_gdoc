@@ -161,111 +161,72 @@
     <script>
       window.onload = async function () {
         try {
-          // Add loading indicator to the page
-          const loadingIndicator = document.createElement("div");
-          loadingIndicator.id = "loading-indicator";
-          loadingIndicator.innerHTML = `
-          <div class="spinner"></div>
-          <p>Connecting to Google...</p>
-        `;
-          loadingIndicator.style.textAlign = "center";
-          loadingIndicator.style.margin = "20px 0";
-          document.querySelector(".container").prepend(loadingIndicator);
-
-          // Create spinner style
-          const style = document.createElement("style");
-          style.textContent = `
-          .spinner {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top-color: #4285f4;
-            animation: spin 1s linear infinite;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `;
-          document.head.appendChild(style);
-
           // Load API configuration from server
           await loadApiConfig();
 
           // Load Google Identity Services script
           await loadGoogleIdentityServicesScript();
 
-          // Check if user already has a valid token
+          // Check if there's a valid token already
           const accessToken = sessionStorage.getItem("accessToken");
           if (accessToken) {
-            // Verify if the token is still valid
             const isValid = await checkAccessToken(accessToken);
-            if (!isValid) {
-              console.log("Access token is invalid, requesting a new one...");
-              await requestAccessToken();
+            if (isValid) {
+              // Token is valid, continue initialization
+              await continueInitialization();
+            } else {
+              // Token is invalid but we will let the pick-file button handle it
+              console.log("Token is invalid, waiting for user action");
+              document.getElementById("pick-file").style.display =
+                "inline-block";
             }
           } else {
-            // If no token exists, request authentication immediately
-            console.log("No access token found, requesting a new one...");
-            try {
-              await requestAccessToken();
-              console.log("Access token obtained successfully:", accessToken);
-            } catch (error) {
-              console.error("Failed to obtain access token:", error);
-            }
+            // No token, but we will let the pick-file button handle it
+            console.log("No token found, waiting for user action");
+            document.getElementById("pick-file").style.display = "inline-block";
           }
 
-          // Initialize Google API Client
-          await initializeGoogleApiClient();
-
-          // Make file picker button visible
-          document.getElementById("pick-file").style.display = "block";
-
-          // Check if there's a stored fileId
-          var fileId = sessionStorage.getItem("fileId");
-          console.log("File ID from session storage: " + fileId);
-          if (fileId) {
+          async function continueInitialization() {
             try {
-              document.getElementById(
-                "doc-url"
-              ).value = `https://docs.google.com/document/d/${fileId}/edit`;
+              // Initialize Google API Client
 
-              // Try to load the file preview, but handle potential errors
-              await showFilePreview(fileId).catch((error) => {
-                console.error("Error loading file preview:", error);
-                // If the file can't be loaded, clear the stored fileId
-                sessionStorage.removeItem("fileId");
-                document.getElementById("doc-url").value = "";
+              await initializeGoogleApiClient();
 
-                // Don't show an alert to avoid confusing the user on page load
-                console.log(
-                  "The previously stored file is no longer accessible. Please select a new file."
-                );
-              });
+              // Check if there's a stored fileId
+              var fileId = sessionStorage.getItem("fileId");
+              console.log("File ID from session storage: " + fileId);
+              if (fileId) {
+                try {
+                  document.getElementById(
+                    "doc-url"
+                  ).value = `https://docs.google.com/document/d/${fileId}/edit`;
+
+                  // Try to load the file preview, but handle potential errors
+                  await showFilePreview(fileId).catch((error) => {
+                    console.error("Error loading file preview:", error);
+                    // If the file can't be loaded, clear the stored fileId
+                    sessionStorage.removeItem("fileId");
+                    document.getElementById("doc-url").value = "";
+
+                    console.log(
+                      "The previously stored file is no longer accessible. Please select a new file."
+                    );
+                  });
+
+                  // If file preview was successful, show the parse button
+                  document.getElementById("parse-file").style.display = "block";
+                } catch (error) {
+                  console.error("Error handling stored fileId:", error);
+                  sessionStorage.removeItem("fileId");
+                  document.getElementById("doc-url").value = "";
+                }
+              }
             } catch (error) {
-              console.error("Error handling stored fileId:", error);
-              // Clear the stored fileId on error
-              sessionStorage.removeItem("fileId");
-              document.getElementById("doc-url").value = "";
+              console.error("Error in continueInitialization:", error);
             }
           }
-
-          // Display the conversion button
-          document.getElementById("parse-file").style.display = "block";
-
-          // Hide loading indicator when everything is done
-          document.getElementById("loading-indicator").style.display = "none";
         } catch (error) {
           console.error("Error during initialization:", error);
-
-          // Hide loading indicator on error
-          const loadingIndicator = document.getElementById("loading-indicator");
-          if (loadingIndicator) {
-            loadingIndicator.style.display = "none";
-          }
-
           alert(
             "An error occurred during initialization. Please try again or contact the administrator."
           );
