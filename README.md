@@ -14,15 +14,15 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 ## ✨ Features
 
 <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
-  <div style="flex: 1; min-width: 300px; background-color: #e8f0fe; padding: 15px; border-radius: 8px; border: 1px solid #d0e1fd;">
-    <h3 style="color: #4285f4;">📊 Smart Tab Navigation</h3>
+  <div style="flex: 1; min-width: 300px; background-color: #fff3e0; padding: 15px; border-radius: 8px; border: 1px solid #ffe0b2;">
+    <h3 style="color: #ff9800;">📦 Distribution Options</h3>
     <ul>
-      <li>Sidebar navigation on desktop devices</li>
-      <li>Collapsible top menu on mobile devices</li>
-      <li>Preserves parent-child relationships between tabs</li>
-      <li>One-click navigation between document sections</li>
+      <li>Online viewing of the generated site</li>
+      <li>Download the complete site as a ZIP archive</li>
+      <li>Easy to deploy on any web hosting</li>
     </ul>
   </div>
+</div>
   
 <div style="flex: 1; min-width: 300px; background-color: #fef9e6; padding: 15px; border-radius: 8px; border: 1px solid #feefc3;">
   <h3 style="color: #f4b400;">
@@ -83,10 +83,14 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 <div style="background-color: #f8f9fa; border-radius: 8px; padding: 15px; margin: 20px 0; border: 1px solid #dadce0;">
 <ol>
   <li>Open the application in your web browser</li>
-  <li>Authenticate with your Google account</li>
   <li>Enter a Google Doc URL or use the picker to select a document</li>
-  <li>Click "Generate HTML Site" to process the document</li>
-  <li>The generated site will open in a new tab and can be found in the <code>output</code> directory</li>
+  <li>Click "Convert Google Doc to HTML" to process the document</li>
+  <li>Once the conversion is complete, you have two options:
+    <ul>
+      <li>Click "View Generated Site" to open the site in a new tab</li>
+      <li>Click "Download as ZIP" to download the complete site as an archive</li>
+    </ul>
+  </li>
   <li>Navigate through the document sections using the generated tab menu</li>
 </ol>
 </div>
