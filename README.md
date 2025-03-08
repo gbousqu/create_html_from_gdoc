@@ -158,14 +158,12 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 ## 🎨 Customization
 
 <div style="background-color: #e8f0fe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 5px solid #4285f4;">
-  <h4 style="color: #4285f4; margin-top: 0;">Tab Navigation</h4>
-  <p>Adjust tab navigation behavior by editing the JavaScript in the HTML template</p>
-  
+ 
   <h4 style="color: #4285f4;">Default Styling</h4>
-  <p>Modify the default CSS styling for all generated sites by editing the <code>styles.css</code> file in the template directory</p>
+  <p>Modify the default CSS styling for all generated sites by editing the <code>styles.css</code> file</p>
   
   <h4 style="color: #4285f4;">Per-Site Styling</h4>
-  <p>Each generated site contains its own copy of the CSS file that can be customized individually without affecting other sites</p>
+  <p>Each generated site contains its own copy of the CSS file that can be customized individually</p>
 
 </div>
 
