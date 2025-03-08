@@ -19,7 +19,6 @@ A web application that converts Google Docs documents with tabs and nested tabs 
     <ul>
       <li>Online viewing of the generated site</li>
       <li>Download the complete site as a ZIP archive</li>
-      <li>Folder structure preserved in the archive</li>
       <li>Easy to deploy on any web hosting</li>
     </ul>
   </div>
