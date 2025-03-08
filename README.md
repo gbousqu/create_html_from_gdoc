@@ -55,7 +55,6 @@ A web application that converts Google Docs documents with tabs and nested tabs 
       <li>Mobile-friendly output</li>
       <li>Adaptive navigation</li>
       <li>Tab navigation transforms based on screen size</li>
-      <li>Image optimization for various devices</li>
     </ul>
   </div>
 </div>
@@ -75,7 +74,7 @@ A web application that converts Google Docs documents with tabs and nested tabs 
    - Follow the instructions to obtain Google API credentials from the [Google Cloud Console](https://console.cloud.google.com/)
    - Enable the Google Drive API and Google Docs API
    - Create OAuth credentials (Web application type)
-   - Configure authorized JavaScript origins and redirect URIs in the Google Cloud Console
+   - Configure authorized JavaScript origins with your domain name (e.g., `https://yourdomain.com`)
    - Create an API Key and properly restrict it
    - Save these credentials in the admin interface
 
