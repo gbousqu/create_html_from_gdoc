@@ -157,7 +157,16 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 
 ## 🎨 Customization
 
+<div style="background-color: #e8f0fe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 5px solid #4285f4;">
+  <h4 style="color: #4285f4; margin-top: 0;">Tab Navigation</h4>
   <p>Adjust tab navigation behavior by editing the JavaScript in the HTML template</p>
+  
+  <h4 style="color: #4285f4;">Default Styling</h4>
+  <p>Modify the default CSS styling for all generated sites by editing the <code>styles.css</code> file in the template directory</p>
+  
+  <h4 style="color: #4285f4;">Per-Site Styling</h4>
+  <p>Each generated site contains its own copy of the CSS file that can be customized individually without affecting other sites</p>
+
 </div>
 
 ## ⚠️ Troubleshooting
@@ -165,18 +174,14 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 <div style="background-color: #fce8e6; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 5px solid #ea4335;">
   <h4 style="color: #ea4335; margin-top: 0;">Authentication Issues</h4>
   <p>Ensure your Google API credentials are correct and have the necessary permissions</p>
-  <p>Make sure both "Authorized JavaScript origins" and "Authorized redirect URIs" are properly configured in your Google Cloud Console</p>
+  <p>Make sure  "Authorized JavaScript origins" is properly configured in your Google Cloud Console</p>
   
   <h4 style="color: #ea4335;">Authentication Error on Production Server</h4>
-  <p>If you receive "Failed to open popup window" errors, check that your domain is added to both the JavaScript origins and redirect URIs in the OAuth client settings</p>
+  <p>If you receive "Failed to open popup window" errors, check that your domain is added to the JavaScript origins URIs in the OAuth client settings</p>
   
   <h4 style="color: #ea4335;">Administration Access</h4>
   <p>If you've lost your admin password, delete the credentials.json file in the assets directory and access admin.html again to reset with the default password "admin"</p>
-
-  <h4 style="color: #ea4335;">Image Loading Problems</h4>
-  <p>Check that the proxy script can access Google's servers</p>
-  <p>Verify that the images directory has proper write permissions</p>
-  
+   
   <h4 style="color: #ea4335;">Write Permission Errors</h4>
   <p>Verify that the web server has write permissions to the output directory</p>
   
