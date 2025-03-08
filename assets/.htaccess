@@ -1,6 +1,0 @@
-# Deny access to JSON files in this directory
-
-<Files "\*.json">
-Order allow,deny
-Deny from all
-</Files>
