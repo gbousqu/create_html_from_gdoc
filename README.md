@@ -3,7 +3,7 @@
 <div style="background-color: #f5f7fa; border-radius: 10px; padding: 20px; margin-bottom: 30px; border-left: 5px solid #4285f4;">
 A web application that converts Google Docs documents with tabs and nested tabs into responsive HTML websites with an interactive navigation system. The document's tab structure is transformed into a sidebar menu on desktop or a dropdown menu on mobile, allowing easy navigation between sections.
 </div>
-<p style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #dadce0;"><strong>Note:</strong> While Google Docs offers a built-in "Publish to Web" feature, it doesn't support tab navigation in the published output and doesn't allow custom CSS styling. This tool bridges that gap by providing a complete conversion solution with full control over the output.</p>
+<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #dadce0;"><strong>Note:</strong> While Google Docs offers a built-in "Publish to Web" feature, it doesn't support tab navigation in the published output and doesn't allow custom CSS styling. This tool bridges that gap by providing a complete conversion solution with full control over the output.</div>
 
 <div align="center">
   <img src="https://img.shields.io/badge/Google%20Docs-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Google Docs">
