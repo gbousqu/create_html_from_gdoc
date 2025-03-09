@@ -2,6 +2,8 @@
 
 <div style="background-color: #f5f7fa; border-radius: 10px; padding: 20px; margin-bottom: 30px; border-left: 5px solid #4285f4;">
 A web application that converts Google Docs documents with tabs and nested tabs into responsive HTML websites with an interactive navigation system. The document's tab structure is transformed into a sidebar menu on desktop or a dropdown menu on mobile, allowing easy navigation between sections.
+
+<p style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #dadce0;"><strong>Note:</strong> While Google Docs offers a built-in "Publish to Web" feature, it doesn't support tab navigation in the published output and doesn't allow custom CSS styling. This tool bridges that gap by providing a complete conversion solution with full control over the output.</p>
 </div>
 
 <div align="center">
@@ -120,6 +122,11 @@ A web application that converts Google Docs documents with tabs and nested tabs 
 
 <div style="margin: 20px 0;">
 <div style="display: flex; align-items: center; padding: 8px 0;">
+
+<div style="background-color: #f0f8ff; border-radius: 8px; padding: 15px; margin-bottom: 20px; border-left: 5px solid #4285f4;">
+<p><strong>Client-Side Processing:</strong> All Google Doc parsing and HTML generation code runs entirely in the client's browser. This approach ensures your document content remains private between your browser and Google's servers, with no intermediate storage on our server.</p>
+</div>
+
   <div style="background-color: #4285f4; color: white; min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;">1</div>
   <div>The application loads API credentials from the server configuration and authenticates with Google APIs using OAuth 2.0</div>
 </div>
