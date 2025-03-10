@@ -1934,7 +1934,48 @@ async function displayGeneratedSite(htmlContent, imageData, docTitle) {
       const imagesInput = document.createElement("input");
       imagesInput.type = "hidden";
       imagesInput.name = "image_data";
-      imagesInput.value = JSON.stringify(imageData);
+
+      // Debug the structure of imageData before sending
+      console.log("Image data structure:", imageData);
+
+      // Make sure base64 data is included in each image
+      const processedImageData = {};
+      for (const [id, image] of Object.entries(imageData)) {
+        // Check if the image has all required properties
+        if (image && image.type === "image") {
+          if (!image.base64) {
+            // If possible, try to get the base64 data dynamically
+            if (image.uri) {
+              try {
+                // Utiliser la fonction existante convertImageToBase64 au lieu de fetchImageAsBase64
+                const base64Data = await convertImageToBase64(image.uri);
+                if (base64Data) {
+                  processedImageData[id] = {
+                    ...image,
+                    base64: base64Data,
+                  };
+                  console.log(`Image ${id} converted to base64 successfully`);
+                } else {
+                  console.warn(`Failed to convert image ${id} to base64`);
+                  processedImageData[id] = image;
+                }
+              } catch (error) {
+                console.error(`Error converting image ${id} to base64:`, error);
+                processedImageData[id] = image;
+              }
+            } else {
+              console.warn(`Image ${id} has no URI to convert`);
+              processedImageData[id] = image;
+            }
+          } else {
+            processedImageData[id] = image;
+          }
+        } else {
+          processedImageData[id] = image;
+        }
+      }
+
+      imagesInput.value = JSON.stringify(processedImageData);
       form.appendChild(imagesInput);
 
       // Add form to document
