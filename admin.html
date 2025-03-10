@@ -367,6 +367,8 @@
 
           // Prepare data for saving
           const formData = new FormData();
+
+          // Add credentials data
           formData.append("client_id", clientId);
           formData.append("api_key", apiKey);
           if (newPassword) {
@@ -381,7 +383,7 @@
           formData.append("max_site_size", maxSiteSize);
           formData.append("max_age_days", maxAgeDays);
 
-          // Save settings
+          // Save all settings in a single request
           fetch("update_config.php", {
             method: "POST",
             body: formData,

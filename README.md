@@ -181,22 +181,56 @@ To prevent server storage saturation when enabling Server Storage Mode, the appl
 
 ## 📂 File Structure
 
-<tr>
-  <td style="padding: 8px; border: 1px solid #dadce0;"><code>admin.html</code></td>
-  <td style="padding: 8px; border: 1px solid #dadce0;">Administration interface for managing API credentials</td>
-</tr>
-<tr style="background-color: #f5f7fa;">
-  <td style="padding: 8px; border: 1px solid #dadce0;"><code>get_config.php</code></td>
-  <td style="padding: 8px; border: 1px solid #dadce0;">Script to retrieve API configuration</td>
-</tr>
-<tr>
-  <td style="padding: 8px; border: 1px solid #dadce0;"><code>save_config.php</code></td>
-  <td style="padding: 8px; border: 1px solid #dadce0;">Script to save API configuration</td>
-</tr>
-<tr style="background-color: #f5f7fa;">
-  <td style="padding: 8px; border: 1px solid #dadce0;"><code>assets/credentials.json</code></td>
-  <td style="padding: 8px; border: 1px solid #dadce0;">File storing API credentials (protected from direct access)</td>
-</tr>
+<table style="width:100%; border-collapse: collapse; margin: 20px 0;">
+  <tr style="background-color: #f5f7fa;">
+    <th style="padding: 10px; border: 1px solid #dadce0; text-align: left;">File/Directory</th>
+    <th style="padding: 10px; border: 1px solid #dadce0; text-align: left;">Description</th>
+  </tr>
+  <tr>
+    <td style="padding: 8px; border: 1px solid #dadce0;"><code>index.html</code></td>
+    <td style="padding: 8px; border: 1px solid #dadce0;">Main application interface</td>
+  </tr>
+  <tr style="background-color: #f5f7fa;">
+    <td style="padding: 8px; border: 1px solid #dadce0;"><code>admin.html</code></td>
+    <td style="padding: 8px; border: 1px solid #dadce0;">Administration interface for managing API credentials and settings</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px; border: 1px solid #dadce0;"><code>fonctions.js</code></td>
+    <td style="padding: 8px; border: 1px solid #dadce0;">Main JavaScript file with all conversion logic</td>
+  </tr>
+  <tr style="background-color: #f5f7fa;">
+    <td style="padding: 8px; border: 1px solid #dadce0;"><code>get_config.php</code></td>
+    <td style="padding: 8px; border: 1px solid #dadce0;">Script to retrieve API configuration</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px; border: 1px solid #dadce0;"><code>update_config.php</code></td>
+    <td style="padding: 8px; border: 1px solid #dadce0;">Unified script to save both API credentials and application settings</td>
+  </tr>
+  <tr style="background-color: #f5f7fa;">
+    <td style="padding: 8px; border: 1px solid #dadce0;"><code>create_zip_from_memory.php</code></td>
+    <td style="padding: 8px; border: 1px solid #dadce0;">Script to generate downloadable ZIP archives of converted sites</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px; border: 1px solid #dadce0;"><code>cleanup.php</code></td>
+    <td style="padding: 8px; border: 1px solid #dadce0;">Maintenance script to remove expired sites</td>
+  </tr>
+  <tr style="background-color: #f5f7fa;">
+    <td style="padding: 8px; border: 1px solid #dadce0;"><code>assets/</code></td>
+    <td style="padding: 8px; border: 1px solid #dadce0;">Directory containing application assets, including credentials.json (requires write permission)</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px; border: 1px solid #dadce0;"><code>assets/credentials.json</code></td>
+    <td style="padding: 8px; border: 1px solid #dadce0;">File storing API credentials (protected from direct access)</td>
+  </tr>
+  <tr style="background-color: #f5f7fa;">
+    <td style="padding: 8px; border: 1px solid #dadce0;"><code>output/</code></td>
+    <td style="padding: 8px; border: 1px solid #dadce0;">Directory for generated sites (requires write permission)</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px; border: 1px solid #dadce0;"><code>config.php</code></td>
+    <td style="padding: 8px; border: 1px solid #dadce0;">Application configuration file</td>
+  </tr>
+</table>
 
 ## ⚙️ How It Works
 

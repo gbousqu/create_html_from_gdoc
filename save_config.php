@@ -22,14 +22,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   // Add password if provided
   if (isset($_POST['admin_password']) && !empty($_POST['admin_password'])) {
-    $config['admin_password'] = $_POST['admin_password'];
+    // Hash the password for security
+    $config['admin_password'] = password_hash($_POST['admin_password'], PASSWORD_DEFAULT);
   } else {
     // Keep existing password if there is one
     $existingConfig = getExistingConfig();
     if (isset($existingConfig['admin_password'])) {
       $config['admin_password'] = $existingConfig['admin_password'];
     } else {
-      $config['admin_password'] = 'admin'; // Default password
+      // Default password (hashed)
+      $config['admin_password'] = password_hash('admin', PASSWORD_DEFAULT);
     }
   }
 
