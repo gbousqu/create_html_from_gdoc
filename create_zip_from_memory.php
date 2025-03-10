@@ -33,7 +33,7 @@ $folderName = $sanitizedTitle ?: 'document';
 error_log("Sanitized folder name: " . $folderName);
 
 // Create a temporary directory for the ZIP content
-$tempDir = sys_get_temp_dir() . '/' . uniqid('gdoc_');
+$tempDir = rtrim(sys_get_temp_dir(), '/\\') . DIRECTORY_SEPARATOR . uniqid('gdoc_');
 error_log("Temp directory: " . $tempDir);
 if (!mkdir($tempDir, 0755, true)) {
   error_log("Error: Failed to create temporary directory");
@@ -42,12 +42,18 @@ if (!mkdir($tempDir, 0755, true)) {
 }
 
 // Create images directory
-$imagesDir = $tempDir . '/images';
+$imagesDir = $tempDir . DIRECTORY_SEPARATOR . 'images';
 error_log("Images directory: " . $imagesDir);
 if (!mkdir($imagesDir, 0755, true)) {
   error_log("Error: Failed to create images directory");
   http_response_code(500);
   exit('Failed to create images directory');
+}
+
+// Et pour éviter les problèmes de chemins dans le reste du script :
+function safePath($path)
+{
+  return str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $path);
 }
 
 // Save the HTML file
@@ -105,7 +111,7 @@ if (is_array($imageData)) {
         // Save the image
         $imageContent = base64_decode($base64String);
         if ($imageContent !== false) {
-          $imagePath = $imagesDir . '/' . $id . '.' . $extension;
+          $imagePath = safePath($imagesDir . DIRECTORY_SEPARATOR . $id . '.' . $extension);
           $writeResult = file_put_contents($imagePath, $imageContent);
           if ($writeResult !== false) {
             error_log("Image saved successfully: " . $imagePath . " - Size: " . $writeResult . " bytes");
