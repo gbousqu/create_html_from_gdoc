@@ -19,7 +19,7 @@ This web application converts Google Docs documents with tabs and nested tabs in
   <div style="flex: 1; min-width: 300px; background-color: #fff3e0; padding: 15px; border-radius: 8px; border: 1px solid #ffe0b2;">
     <h3 style="color: #ff9800;">📦 Distribution Options</h3>
     <ul>
-      <li>Online viewing of the generated site</li>
+      <li>Online viewing of the generated site (if enabled)</li>
       <li>Download the complete site as a ZIP archive</li>
       <li>Easy to deploy on any web hosting</li>
     </ul>
