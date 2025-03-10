@@ -71,7 +71,8 @@ This web application converts Google Docs documents with tabs and nested tabs in
 
 1. Clone or download this repository to your web server's public directory
 2. Ensure the `output` directory exists and has write permissions
-3. Access the administration page (`admin.html`) to configure your Google API credentials:
+3. Ensure the `assets` directory has write permissions (for storing credentials.json)
+4. Access the administration page (`admin.html`) to configure your Google API credentials:
    - Default admin password is "admin"
    - Follow the instructions to obtain Google API credentials from the [Google Cloud Console](https://console.cloud.google.com/)
    - Enable the Google Drive API and Google Docs API
