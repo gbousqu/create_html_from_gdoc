@@ -155,6 +155,114 @@
         <div id="warning-message">Client ID and API Key are required.</div>
         <div id="success-message">Settings saved successfully!</div>
 
+        <!-- Add this to your admin.html form -->
+        <div class="form-group">
+          <h3>Server Storage Settings</h3>
+          <div class="input-group">
+            <label for="server-storage-enabled">Enable server storage:</label>
+            <input
+              type="checkbox"
+              id="server-storage-enabled"
+              name="server_storage_enabled"
+            />
+            <small
+              >If disabled, generated sites will only be available for download
+              as ZIP files.</small
+            >
+          </div>
+
+          <div id="storage-limits" style="margin-left: 20px; padding-top: 10px">
+            <div class="input-group">
+              <label for="max-sites-per-ip">Max sites per IP address:</label>
+              <input
+                type="number"
+                id="max-sites-per-ip"
+                name="max_sites_per_ip"
+                min="1"
+                value="3"
+              />
+            </div>
+
+            <div class="input-group">
+              <label for="max-total-sites">Max total sites:</label>
+              <input
+                type="number"
+                id="max-total-sites"
+                name="max_total_sites"
+                min="1"
+                value="50"
+              />
+            </div>
+
+            <div class="input-group">
+              <label for="max-site-size">Max site size (MB):</label>
+              <input
+                type="number"
+                id="max-site-size"
+                name="max_site_size"
+                min="1"
+                value="10"
+              />
+            </div>
+
+            <div class="input-group">
+              <label for="max-age-days">Auto-delete after (days):</label>
+              <input
+                type="number"
+                id="max-age-days"
+                name="max_age_days"
+                min="1"
+                value="30"
+              />
+            </div>
+          </div>
+        </div>
+
+        <script>
+          // Toggle visibility of storage limits based on checkbox
+          document
+            .getElementById("server-storage-enabled")
+            .addEventListener("change", function () {
+              document.getElementById("storage-limits").style.display = this
+                .checked
+                ? "block"
+                : "none";
+            });
+
+          // Load existing settings when the page loads
+          document.addEventListener("DOMContentLoaded", function () {
+            // Fetch server config
+            fetch("get_app_config.php?full=1")
+              .then((response) => response.json())
+              .then((config) => {
+                // Set the checkbox state
+                const storageEnabled =
+                  config.server_storage && config.server_storage.enabled;
+                document.getElementById("server-storage-enabled").checked =
+                  storageEnabled;
+                document.getElementById("storage-limits").style.display =
+                  storageEnabled ? "block" : "none";
+
+                // Set the numeric values if they exist
+                if (config.server_storage && config.server_storage.limits) {
+                  const limits = config.server_storage.limits;
+                  if (limits.max_sites_per_ip)
+                    document.getElementById("max-sites-per-ip").value =
+                      limits.max_sites_per_ip;
+                  if (limits.max_total_sites)
+                    document.getElementById("max-total-sites").value =
+                      limits.max_total_sites;
+                  if (limits.max_site_size)
+                    document.getElementById("max-site-size").value =
+                      limits.max_site_size / 1024 / 1024; // Convert bytes to MB
+                  if (limits.max_age_days)
+                    document.getElementById("max-age-days").value =
+                      limits.max_age_days;
+                }
+              });
+          });
+        </script>
+
         <button id="save-settings">Save Settings</button>
         <button id="logout-button" style="background-color: #6c757d">
           Logout
@@ -240,6 +348,17 @@
           const newPassword =
             document.getElementById("admin-new-password").value;
 
+          // Get server storage settings
+          const serverStorageEnabled = document.getElementById(
+            "server-storage-enabled"
+          ).checked;
+          const maxSitesPerIp =
+            document.getElementById("max-sites-per-ip").value;
+          const maxTotalSites =
+            document.getElementById("max-total-sites").value;
+          const maxSiteSize = document.getElementById("max-site-size").value;
+          const maxAgeDays = document.getElementById("max-age-days").value;
+
           if (!clientId || !apiKey) {
             document.getElementById("warning-message").style.display = "block";
             document.getElementById("success-message").style.display = "none";
@@ -255,8 +374,15 @@
             defaultPassword = newPassword;
           }
 
+          // Add server storage settings
+          formData.append("server_storage_enabled", serverStorageEnabled);
+          formData.append("max_sites_per_ip", maxSitesPerIp);
+          formData.append("max_total_sites", maxTotalSites);
+          formData.append("max_site_size", maxSiteSize);
+          formData.append("max_age_days", maxAgeDays);
+
           // Save settings
-          fetch("save_config.php", {
+          fetch("update_config.php", {
             method: "POST",
             body: formData,
           })

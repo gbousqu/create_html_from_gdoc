@@ -81,6 +81,32 @@ This web application converts Google Docs documents with tabs and nested tabs in
    - Create an API Key and properly restrict it
    - Save these credentials in the admin interface
 
+## 🔧 Administration
+
+<div style="background-color: #fafafa; border-radius: 8px; padding: 15px; margin: 20px 0; border: 1px solid #e0e0e0;">
+  <h3 style="color: #424242;">Configuring Storage Options</h3>
+  <p>Access the administration page to configure how the application handles generated sites:</p>
+  <ol>
+    <li>Go to <code>admin.html</code> and log in with your admin password</li>
+    <li>Scroll down to the "Server Storage Settings" section</li>
+    <li>Enable or disable server storage as needed:
+      <ul>
+        <li><strong>Disabled (default):</strong> Client-only mode with ZIP downloads</li>
+        <li><strong>Enabled:</strong> Both server storage and ZIP downloads available</li>
+      </ul>
+    </li>
+    <li>When enabled, configure the storage limits:
+      <ul>
+        <li>Maximum sites per IP address</li>
+        <li>Maximum total sites stored on server</li>
+        <li>Maximum size per site (in MB)</li>
+        <li>Auto-delete period (in days)</li>
+      </ul>
+    </li>
+    <li>Click "Save Settings" to apply changes</li>
+  </ol>
+</div>
+
 ## 🚀 Usage
 
 <div style="background-color: #f8f9fa; border-radius: 8px; padding: 15px; margin: 20px 0; border: 1px solid #dadce0;">
@@ -98,6 +124,59 @@ This web application converts Google Docs documents with tabs and nested tabs in
   </li>
   <li>Navigate through the document sections using the generated tab menu</li>
 </ol>
+</div>
+
+## 🚀 Usage Options
+
+### Client-Only Mode (Default)
+
+<div style="background-color: #e8f0fe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 5px solid #4285f4;">
+  <p>By default, the application operates in Client-Only Mode with these characteristics:</p>
+  <ul>
+    <li>All processing happens entirely in your browser</li>
+    <li>Generated sites are only available for download as ZIP files</li>
+    <li><strong>No files are stored on the server</strong>, preserving server resources</li>
+    <li>Perfect for public deployments or environments with limited storage</li>
+  </ul>
+</div>
+
+### Server Storage Mode (Optional)
+
+<div style="background-color: #e8f0fe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 5px solid #ffa000;">
+  <p>For situations where you want to host the generated sites on the server:</p>
+  <ul>
+    <li>Enable this mode in the administration interface</li>
+    <li>Generated sites are stored on the server and accessible via direct URLs</li>
+    <li>Sites can be both viewed online and downloaded as ZIP files</li>
+    <li>Configurable limits prevent server storage exhaustion</li>
+    <li>Automatic cleanup removes unused sites after a specified period</li>
+  </ul>
+</div>
+
+## 📊 Storage Management
+
+To prevent server storage saturation when enabling Server Storage Mode, the application includes several safeguards:
+
+<div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
+  <div style="flex: 1; min-width: 300px; background-color: #fce4ec; padding: 15px; border-radius: 8px; border: 1px solid #f48fb1;">
+    <h3 style="color: #c2185b;">📋 Configurable Limits</h3>
+    <ul>
+      <li><strong>Sites per IP:</strong> Maximum number of sites one user can create</li>
+      <li><strong>Total sites:</strong> Maximum number of sites allowed on the server</li>
+      <li><strong>Site size:</strong> Maximum allowed size for each generated site</li>
+      <li><strong>Retention period:</strong> Days before automatic site deletion</li>
+    </ul>
+  </div>
+  
+  <div style="flex: 1; min-width: 300px; background-color: #e0f2f1; padding: 15px; border-radius: 8px; border: 1px solid #80cbc4;">
+    <h3 style="color: #00897b;">🧹 Automatic Cleanup</h3>
+    <ul>
+      <li>The <code>cleanup.php</code> script automatically removes sites exceeding the retention period</li>
+      <li>Can be scheduled as a cron job for automated maintenance</li>
+      <li>Helps prevent storage exhaustion on long-running deployments</li>
+      <li>Example cron entry: <code>0 0 * * * php /path/to/create_html_from_gdoc/cleanup.php</code></li>
+    </ul>
+  </div>
 </div>
 
 ## 📂 File Structure

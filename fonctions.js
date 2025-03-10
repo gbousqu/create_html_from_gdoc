@@ -1867,27 +1867,104 @@ async function displayGeneratedSite(htmlContent, imageData, docTitle) {
       <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
     `;
 
-    // Save the site and images
-    const result = await saveGeneratedSite(htmlContent, imageData, docTitle);
+    // First, fetch the app configuration to check if server storage is enabled
+    const configResponse = await fetch("get_app_config.php");
+    const config = await configResponse.json();
 
-    if (result.success) {
-      // Create the UI to access the generated site
-      const downloadContainer = document.createElement("div");
-      downloadContainer.style.marginTop = "20px";
-      downloadContainer.style.padding = "15px";
-      downloadContainer.style.border = "1px solid #ccc";
-      downloadContainer.style.backgroundColor = "#f9f9f9";
-      downloadContainer.style.borderRadius = "5px";
+    // If server storage is enabled, save the site on server. Otherwise, skip this step.
+    let result = { success: false };
+    if (config.server_storage && config.server_storage.enabled) {
+      // Save the site and images to server
+      result = await saveGeneratedSite(htmlContent, imageData, docTitle);
+    } else {
+      // In client-only mode, create the ZIP directly without saving to server
+      result = {
+        success: true,
+        clientOnly: true,
+        docTitle: docTitle,
+      };
+    }
 
-      const downloadHeading = document.createElement("h3");
-      downloadHeading.textContent = "Site generated successfully!";
-      downloadHeading.style.color = "#34a853";
+    // Create the UI to access the generated content
+    const downloadContainer = document.createElement("div");
+    downloadContainer.style.marginTop = "20px";
+    downloadContainer.style.padding = "15px";
+    downloadContainer.style.border = "1px solid #ccc";
+    downloadContainer.style.backgroundColor = "#f9f9f9";
+    downloadContainer.style.borderRadius = "5px";
 
-      // Action buttons container
-      const actionContainer = document.createElement("div");
-      actionContainer.style.display = "flex";
-      actionContainer.style.gap = "10px";
-      actionContainer.style.margin = "15px 0";
+    const downloadHeading = document.createElement("h3");
+    downloadHeading.textContent = "Site generated successfully!";
+    downloadHeading.style.color = "#34a853";
+
+    // Action buttons container
+    const actionContainer = document.createElement("div");
+    actionContainer.style.display = "flex";
+    actionContainer.style.gap = "10px";
+    actionContainer.style.margin = "15px 0";
+
+    // Add information text based on the storage mode
+    const infoMessage = document.createElement("p");
+
+    if (result.clientOnly) {
+      infoMessage.innerHTML = `<strong>Client-Only Mode:</strong> The site has been generated in your browser and is ready for download.
+        <br>No files have been stored on the server.`;
+
+      // Create a hidden form to submit for creating ZIP without server storage
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "create_zip_from_memory.php";
+      form.style.display = "none";
+
+      // Add HTML content as hidden input
+      const htmlInput = document.createElement("input");
+      htmlInput.type = "hidden";
+      htmlInput.name = "html_content";
+      htmlInput.value = htmlContent;
+      form.appendChild(htmlInput);
+
+      // Add document title
+      const titleInput = document.createElement("input");
+      titleInput.type = "hidden";
+      titleInput.name = "doc_title";
+      titleInput.value = docTitle;
+      form.appendChild(titleInput);
+
+      // Add serialized image data
+      const imagesInput = document.createElement("input");
+      imagesInput.type = "hidden";
+      imagesInput.name = "image_data";
+      imagesInput.value = JSON.stringify(imageData);
+      form.appendChild(imagesInput);
+
+      // Add form to document
+      document.body.appendChild(form);
+
+      // Download as ZIP button (submits the form)
+      const downloadZipButton = document.createElement("button");
+      downloadZipButton.textContent = "Download as ZIP";
+      downloadZipButton.classList.add("download-zip-button");
+      downloadZipButton.style.display = "inline-block";
+      downloadZipButton.style.padding = "10px 15px";
+      downloadZipButton.style.backgroundColor = "#FF9800"; // Orange
+      downloadZipButton.style.color = "white";
+      downloadZipButton.style.border = "none";
+      downloadZipButton.style.borderRadius = "4px";
+      downloadZipButton.style.cursor = "pointer";
+      downloadZipButton.style.textDecoration = "none";
+      downloadZipButton.style.textAlign = "center";
+      downloadZipButton.style.minWidth = "150px";
+
+      // When clicked, submit the form
+      downloadZipButton.addEventListener("click", function () {
+        form.submit();
+      });
+
+      actionContainer.appendChild(downloadZipButton);
+    } else if (result.success) {
+      // Server storage mode - show both online view and download options
+      infoMessage.textContent =
+        "The site has been generated successfully. You can view it online or download it as a ZIP archive.";
 
       // View site button
       const siteLink = document.createElement("a");
@@ -1921,33 +1998,19 @@ async function displayGeneratedSite(htmlContent, imageData, docTitle) {
       // Add buttons to container
       actionContainer.appendChild(siteLink);
       actionContainer.appendChild(downloadZipLink);
-
-      // Info message
-      const infoMessage = document.createElement("p");
-      infoMessage.textContent =
-        "The site has been generated successfully. You can view it online or download it as a ZIP archive.";
-
-      // Add elements to the main container
-      downloadContainer.appendChild(downloadHeading);
-      downloadContainer.appendChild(infoMessage);
-      downloadContainer.appendChild(actionContainer);
-
-      resultContainer.innerHTML = "";
-      resultContainer.appendChild(downloadContainer);
-
-      // Store the URL in sessionStorage for later use
-      sessionStorage.setItem("generatedSiteUrl", result.url);
-      sessionStorage.setItem("generatedSiteFolder", result.folder);
     } else {
-      // Display an error message
-      resultContainer.innerHTML = `
-        <div style="padding: 20px; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px;">
-          <h3>Error generating site</h3>
-          <p>${result.error}</p>
-          <p>Please check the write permissions in the "output" folder of your server.</p>
-        </div>
-      `;
+      infoMessage.innerHTML = `<strong>Error:</strong> ${
+        result.error || "Failed to generate the site."
+      }`;
     }
+
+    // Add elements to the main container
+    downloadContainer.appendChild(downloadHeading);
+    downloadContainer.appendChild(infoMessage);
+    downloadContainer.appendChild(actionContainer);
+
+    resultContainer.innerHTML = "";
+    resultContainer.appendChild(downloadContainer);
   } catch (error) {
     console.error("Error displaying generated site:", error);
     const resultContainer =
